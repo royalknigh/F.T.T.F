@@ -50,7 +50,6 @@ public class Auto extends OpMode {
 
     @Override
     public void init_loop() {
-
     }
 
     @Override

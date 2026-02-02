@@ -3,12 +3,15 @@ package org.firstinspires.ftc.teamcode.configs;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
 public class Configuration {
 
     public static DcMotorEx frontLeftMotor, backLeftMotor, frontRightMotor,
             backRightMotor, launchMotor1, launchMotor2, intakeMotor, turretMotor;
+
+    public static Servo stpp, marco;
 
     public Configuration(HardwareMap hardwareMap) {
         frontLeftMotor = (DcMotorEx) hardwareMap.get(DcMotor.class, "fl");
@@ -20,6 +23,9 @@ public class Configuration {
         launchMotor2 = (DcMotorEx) hardwareMap.get(DcMotor.class, "lm2");
         intakeMotor = (DcMotorEx) hardwareMap.get(DcMotor.class, "im");
         turretMotor = (DcMotorEx) hardwareMap.get(DcMotor.class, "turret");
+
+        stpp = hardwareMap.get(Servo.class, "stpp");
+        marco = hardwareMap.get(Servo.class, "marco");
 
 
         frontLeftMotor.setDirection(DcMotorEx.Direction.REVERSE);
