@@ -11,7 +11,7 @@ public class Configuration {
     public static DcMotorEx frontLeftMotor, backLeftMotor, frontRightMotor,
             backRightMotor, launchMotor1, launchMotor2, intakeMotor, turretMotor;
 
-    public static Servo stpp, marco;
+    public static Servo stopper, marco;
 
     public Configuration(HardwareMap hardwareMap) {
         frontLeftMotor = (DcMotorEx) hardwareMap.get(DcMotor.class, "fl");
@@ -24,7 +24,7 @@ public class Configuration {
         intakeMotor = (DcMotorEx) hardwareMap.get(DcMotor.class, "im");
         turretMotor = (DcMotorEx) hardwareMap.get(DcMotor.class, "turret");
 
-        stpp = hardwareMap.get(Servo.class, "stpp");
+        stopper = hardwareMap.get(Servo.class, "stopper");
         marco = hardwareMap.get(Servo.class, "marco");
 
 
@@ -87,24 +87,6 @@ public class Configuration {
         MotorConfigurationType configIntakeMotor = intakeMotor.getMotorType().clone();
         configIntakeMotor.setAchieveableMaxRPMFraction(1.0);
         intakeMotor.setMotorType(configIntakeMotor);
-    }
-
-
-    public void mecanumDrive(double y, double x, double rx, double speedDivider) {
-        double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
-        double frontLeftPower = (y + x + rx) / denominator / speedDivider;
-        double backLeftPower = (y - x + rx) / denominator / speedDivider;
-        double frontRightPower = (y - x - rx) / denominator / speedDivider;
-        double backRightPower = (y + x - rx) / denominator / speedDivider;
-
-        setMotorPowers(frontLeftPower, backLeftPower, frontRightPower, backRightPower);
-    }
-
-    public void setMotorPowers(double frontLeftPower, double backLeftPower, double frontRightPower, double backRightPower) {
-        frontLeftMotor.setPower(frontLeftPower);
-        backLeftMotor.setPower(backLeftPower);
-        frontRightMotor.setPower(frontRightPower);
-        backRightMotor.setPower(backRightPower);
     }
 
 

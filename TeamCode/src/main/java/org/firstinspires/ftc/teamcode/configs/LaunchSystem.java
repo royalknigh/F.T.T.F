@@ -12,10 +12,10 @@ public class LaunchSystem {
     private boolean isLaunching = false;
     public double currentTargetVelocity, highVelocity = 1600, lowVelocity = 1250;
 
-    private Servo stpp;
+    private Servo stopper;
     public double holdBall, passBall;
 
-    private final double TICKS_PER_DEGREE = (145.1 * 5.0) / 360.0;
+    private final double TICKS_PER_DEGREE = (145.1 * 5.0) / 360.0;      //1922.5 / 360.0
     private final Pose goalPose = new Pose(12, 132);
 
     public LaunchSystem(Configuration config) {
@@ -23,7 +23,7 @@ public class LaunchSystem {
         this.lm2 = config.launchMotor2;
         this.im = config.intakeMotor;
         this.turret = config.turretMotor;
-        this.stpp = config.stpp;
+        this.stopper = config.stopper;
 
         lm1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         lm2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -63,7 +63,7 @@ public class LaunchSystem {
 
     public void idle() {
         isLaunching = false;
-        stpp.setPosition(holdBall);
+        stopper.setPosition(holdBall);
         setDualVelocity(900);
     }
 
@@ -71,7 +71,7 @@ public class LaunchSystem {
         if (!isLaunching) return true;
         if(getVelocity()>=currentTargetVelocity)
             if (launchTimer.milliseconds() < 1000) {
-                stpp.setPosition(passBall);
+                stopper.setPosition(passBall);
                 im.setPower(1);
                 return true;
             }

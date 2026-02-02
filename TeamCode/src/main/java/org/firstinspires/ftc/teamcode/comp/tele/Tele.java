@@ -43,14 +43,14 @@ public class Tele extends OpMode {
         follower.update();
         launchSystem.updateTurret(follower.getPose());
         follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
-
-        telemetry.update();
+        stateMachine();
+        angleCalculator();
     }
 
     public void stateMachine(){
         switch (state){
             case PIKCUP: {
-                config.stpp.setPosition(launchSystem.holdBall);
+                launchSystem.idle();
                 double intakePower = (gamepad1.left_trigger>0.1)? gamepad1.left_trigger : 0;
                 config.intakeMotor.setPower(intakePower);
 
@@ -73,13 +73,13 @@ public class Tele extends OpMode {
 
     public double speedCalculator(){
         double dist = launchSystem.getDistanceToGoal(follower.getPose());
-        double speed = dist*2;
+        double speed = dist*2;          //havent found formula yet
         return speed;
     }
 
     public void angleCalculator(){
         double dist = launchSystem.getDistanceToGoal(follower.getPose());
-        double angle = dist*2;
+        double angle = dist*2;          //havent found formula yet
         config.marco.setPosition(angle);
     }
 
