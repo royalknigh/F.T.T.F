@@ -41,10 +41,13 @@ public class Tele extends OpMode {
     @Override
     public void loop() {
         follower.update();
-        launchSystem.updateTurret(follower.getPose());
         follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
         stateMachine();
+
+        launchSystem.updateTurret(follower.getPose());
+        launchSystem.addOffset();
         angleCalculator();
+        displayData();
     }
 
     public void stateMachine(){
@@ -81,6 +84,13 @@ public class Tele extends OpMode {
         double dist = launchSystem.getDistanceToGoal(follower.getPose());
         double angle = dist*2;          //havent found formula yet
         config.marco.setPosition(angle);
+    }
+
+    public void displayData(){
+        telemetry.addData("turret ticks: ", launchSystem.getTurretTicks());
+        telemetry.addData("turret offset: ", launchSystem.turretOffset);
+
+        telemetry.update();
     }
 
 }

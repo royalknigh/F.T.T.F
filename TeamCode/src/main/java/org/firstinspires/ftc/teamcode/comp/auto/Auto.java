@@ -45,6 +45,7 @@ public class Auto extends OpMode {
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(startPose);
         launchSystem = new LaunchSystem(new Configuration(hardwareMap));
+
         buildPaths();
     }
 
@@ -63,6 +64,7 @@ public class Auto extends OpMode {
         launchSystem.updateTurret(follower.getPose());
         autonomousPathUpdate();
         telemetry.addData("Path State", pathState);
+        telemetry.addData("turret ticks: ", launchSystem.getTurretTicks());
         telemetry.update();
     }
 

@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.configs;
 
+import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.gamepad1;
+
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -16,6 +18,7 @@ public class LaunchSystem {
     public double holdBall, passBall;
 
     private final double TICKS_PER_DEGREE = (145.1 * 5.0) / 360.0;      //1922.5 / 360.0
+    public int turretOffset =0;
     private final Pose goalPose = new Pose(12, 132);
 
     public LaunchSystem(Configuration config) {
@@ -27,10 +30,6 @@ public class LaunchSystem {
 
         lm1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         lm2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        turret.setTargetPosition(0);
-        turret.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        turret.setPower(0.8);
     }
 
     public void updateTurret(Pose robotPose) {
@@ -44,7 +43,7 @@ public class LaunchSystem {
         while (relativeAngle < -180) relativeAngle += 360;
 
         int targetTicks = (int) (relativeAngle * TICKS_PER_DEGREE);
-        turret.setTargetPosition(targetTicks);
+        turret.setTargetPosition(targetTicks + turretOffset);
     }
 
 //   TODO:  launch speed based in distance
@@ -75,7 +74,6 @@ public class LaunchSystem {
                 im.setPower(1);
                 return true;
             }
-
         return false;
     }
 
@@ -92,5 +90,13 @@ public class LaunchSystem {
         double dx = goalPose.getX() - robotPose.getX();
         double dy = goalPose.getY() - robotPose.getY();
         return Math.hypot(dx, dy);
+    }
+    public double getTurretTicks(){
+        return turret.getCurrentPosition();
+    }
+
+    public void addOffset(){
+        if(gamepad1.dpadDownWasPressed()) turretOffset -=10;
+        if(gamepad1.dpadUpWasPressed()) turretOffset +=10;
     }
 }
