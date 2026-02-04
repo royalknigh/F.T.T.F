@@ -1,25 +1,33 @@
 package org.firstinspires.ftc.teamcode.configs;
 
+import com.bylazar.configurables.annotations.Configurable;
 import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.gamepad1;
 
 import com.pedropathing.geometry.Pose;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-
+@Configurable
+@Disabled
 public class LaunchSystem {
     private final DcMotorEx lm1, lm2, im, turret;
     private ElapsedTime launchTimer = new ElapsedTime();
     private boolean isLaunching = false;
-    public double currentTargetVelocity, highVelocity = 1600, lowVelocity = 1250;
+    public static double currentTargetVelocity, idleVelocity = 900;
 
     private Servo stopper;
     public double holdBall, passBall;
 
+    public static double P =40, F = 15;
+
     private final double TICKS_PER_DEGREE = (145.1 * 5.0) / 360.0;      //1922.5 / 360.0
     public int turretOffset =0;
-    private final Pose goalPose = new Pose(12, 132);
+
+    public final Pose blueGoalPose = new Pose(12, 136);
+    public final Pose redGoalPose = new Pose(130, 136);
+    private Pose goalPose;
 
     public LaunchSystem(Configuration config) {
         this.lm1 = config.launchMotor1;
@@ -30,6 +38,10 @@ public class LaunchSystem {
 
         lm1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         lm2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        turret.setTargetPosition(0);
+        turret.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        turret.setPower(0.8);
     }
 
     public void updateTurret(Pose robotPose) {
@@ -43,7 +55,7 @@ public class LaunchSystem {
         while (relativeAngle < -180) relativeAngle += 360;
 
         int targetTicks = (int) (relativeAngle * TICKS_PER_DEGREE);
-        turret.setTargetPosition(targetTicks + turretOffset);
+        turret.setTargetPosition(targetTicks);
     }
 
 //   TODO:  launch speed based in distance
@@ -51,6 +63,11 @@ public class LaunchSystem {
     private void setDualVelocity(double velocity) {
         lm1.setVelocity(velocity);
         lm2.setVelocity(velocity);
+    }
+
+    public void updatePIDF() {
+        lm1.setVelocityPIDFCoefficients(P, 0, 0, F);
+        lm2.setVelocityPIDFCoefficients(P, 0, 0, F);
     }
 
     public void start(double target) {
@@ -63,7 +80,7 @@ public class LaunchSystem {
     public void idle() {
         isLaunching = false;
         stopper.setPosition(holdBall);
-        setDualVelocity(900);
+        setDualVelocity(idleVelocity);
     }
 
     public boolean update() {
@@ -74,6 +91,7 @@ public class LaunchSystem {
                 im.setPower(1);
                 return true;
             }
+
         return false;
     }
 
@@ -98,5 +116,12 @@ public class LaunchSystem {
     public void addOffset(){
         if(gamepad1.dpadDownWasPressed()) turretOffset -=10;
         if(gamepad1.dpadUpWasPressed()) turretOffset +=10;
+    }
+
+    public void setGoal(Pose pose){
+        goalPose= pose;
+    }
+    public Pose getGoal(){
+        return goalPose;
     }
 }

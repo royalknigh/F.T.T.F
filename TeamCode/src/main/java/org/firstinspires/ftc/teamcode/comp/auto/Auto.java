@@ -72,4 +72,6 @@ public class Auto extends OpMode {
     public void stop(){
         Tele.startPose = follower.getPose();
     }
+
+//    public void
 }

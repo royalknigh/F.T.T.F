@@ -24,6 +24,8 @@ public class Tele extends OpMode {
     private Follower follower; private LaunchSystem launchSystem;
     public static Pose startPose; private Configuration config;
     public enum State{PIKCUP, LAUNCH} public State state = State.PIKCUP;
+    public boolean idle = true;
+
 
     @Override
     public void init() {
@@ -39,21 +41,41 @@ public class Tele extends OpMode {
     }
 
     @Override
+    public void init_loop(){
+        if(gamepad1.xWasPressed())  launchSystem.setGoal(launchSystem.blueGoalPose);
+        if(gamepad1.bWasPressed())  launchSystem.setGoal(launchSystem.redGoalPose);
+
+        telemetry.addData("goal pose x: ", launchSystem.getGoal().getX());
+        telemetry.addData("goal pose y: ", launchSystem.getGoal().getY());
+        telemetry.update();
+    }
+
+    @Override
     public void loop() {
         follower.update();
+        launchSystem.updateTurret(follower.getPose());
         follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
         stateMachine();
 
         launchSystem.updateTurret(follower.getPose());
         launchSystem.addOffset();
         angleCalculator();
+        if(gamepad1.rightBumperWasPressed())
+            follower.setPose(new Pose(follower.getPose().getX(), follower.getPose().getY(), Math.toRadians(180)));
+
+        telemetry.addData("state: ", state);
+        telemetry.addData("flywheel velocity", launchSystem.getVelocity());
+        telemetry.update();
         displayData();
     }
 
     public void stateMachine(){
         switch (state){
             case PIKCUP: {
-                launchSystem.idle();
+                if(gamepad1.leftBumperWasPressed())
+                    idle=!idle;
+                if(idle) launchSystem.idle();
+                else launchSystem.fullStop();
                 double intakePower = (gamepad1.left_trigger>0.1)? gamepad1.left_trigger : 0;
                 config.intakeMotor.setPower(intakePower);
 
@@ -65,8 +87,9 @@ public class Tele extends OpMode {
             }
 
             case LAUNCH:{
-                if(launchSystem.update())
+                if(launchSystem.update()) {
                     state = State.PIKCUP;
+                }
                 break;
             }
         }
