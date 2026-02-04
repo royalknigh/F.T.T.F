@@ -38,10 +38,6 @@ public class LaunchSystem {
 
         lm1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         lm2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        turret.setTargetPosition(0);
-        turret.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        turret.setPower(0.8);
     }
 
     public void updateTurret(Pose robotPose) {
@@ -55,7 +51,7 @@ public class LaunchSystem {
         while (relativeAngle < -180) relativeAngle += 360;
 
         int targetTicks = (int) (relativeAngle * TICKS_PER_DEGREE);
-        turret.setTargetPosition(targetTicks);
+        turret.setTargetPosition(targetTicks + turretOffset);
     }
 
 //   TODO:  launch speed based in distance
