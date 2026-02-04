@@ -53,15 +53,12 @@ public class Tele extends OpMode {
     @Override
     public void loop() {
         follower.update();
-        launchSystem.updateTurret(follower.getPose());
         follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
         stateMachine();
 
         launchSystem.updateTurret(follower.getPose());
         launchSystem.addOffset();
         angleCalculator();
-        if(gamepad1.rightBumperWasPressed())
-            follower.setPose(new Pose(follower.getPose().getX(), follower.getPose().getY(), Math.toRadians(180)));
 
         telemetry.addData("state: ", state);
         telemetry.addData("flywheel velocity", launchSystem.getVelocity());
@@ -85,7 +82,6 @@ public class Tele extends OpMode {
                 }
                 break;
             }
-
             case LAUNCH:{
                 if(launchSystem.update()) {
                     state = State.PIKCUP;
