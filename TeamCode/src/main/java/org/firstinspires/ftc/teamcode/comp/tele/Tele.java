@@ -11,6 +11,7 @@ import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.configs.Configuration;
 import org.firstinspires.ftc.teamcode.configs.LaunchSystem;
@@ -25,7 +26,6 @@ public class Tele extends OpMode {
     public static Pose startPose; private Configuration config;
     public enum State{PIKCUP, LAUNCH} public State state = State.PIKCUP;
     public boolean idle = true;
-
 
     @Override
     public void init() {
@@ -67,6 +67,9 @@ public class Tele extends OpMode {
     }
 
     public void stateMachine(){
+        if (gamepad1.aWasPressed()) {
+            launchSystem.toggleTracking();
+        }
         switch (state){
             case PIKCUP: {
                 if(gamepad1.leftBumperWasPressed())
@@ -101,8 +104,9 @@ public class Tele extends OpMode {
 
     public void angleCalculator(){
         double dist = launchSystem.getDistanceToGoal(follower.getPose());
-        double angle = dist*2;          //havent found formula yet
-        config.marco.setPosition(angle);
+        double angle = dist*2;
+        //havent found formula yet
+        config.marco.setPosition(Range.clip(angle, 0.16, 0.85));
     }
 
     public void displayData(){

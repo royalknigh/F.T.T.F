@@ -40,8 +40,22 @@ public class LaunchSystem {
         lm2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
+    private boolean trackingEnabled = true;
+
+    public void toggleTracking() {
+        trackingEnabled = !trackingEnabled;
+    }
+
+    public boolean isTrackingEnabled() {
+        return trackingEnabled;
+    }
+
     public void updateTurret(Pose robotPose) {
-        double dx = goalPose.getX() - robotPose.getX();
+        if (!trackingEnabled) {
+            return;
+        }
+
+        double dx = Math.abs(goalPose.getX() - robotPose.getX());
         double dy = goalPose.getY() - robotPose.getY();
 
         double angleToGoal = Math.atan2(dy, dx);
@@ -52,6 +66,9 @@ public class LaunchSystem {
 
         int targetTicks = (int) (relativeAngle * TICKS_PER_DEGREE);
         turret.setTargetPosition(targetTicks + turretOffset);
+
+        turret.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        turret.setPower(1.0);
     }
 
 //   TODO:  launch speed based in distance

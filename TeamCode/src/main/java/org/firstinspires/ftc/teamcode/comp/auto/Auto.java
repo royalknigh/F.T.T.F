@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode.comp.auto;
 
 import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -23,7 +25,8 @@ public class Auto extends OpMode {
     private PathChain scorePreload;
 
     public void buildPaths() {
-            }
+
+    }
 
     public void autonomousPathUpdate() {
         switch (pathState) {
