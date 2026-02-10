@@ -18,16 +18,16 @@ public class LaunchSystem {
     public static double currentTargetVelocity, idleVelocity = 900;
 
     private Servo stopper;
-    public double holdBall, passBall;
+    public double holdBall = 0.71, passBall = 0.95;
 
-    public static double P =40, F = 15;
+    public static double P =20, F = 13.07;
 
-    private final double TICKS_PER_DEGREE = (145.1 * 5.0) / 360.0;      //1922.5 / 360.0
+    private final double TICKS_PER_DEGREE = (145.1 * 4.2) / 360.0;      //1922.5 / 360.0
     public int turretOffset =0;
 
     public final Pose blueGoalPose = new Pose(12, 136);
     public final Pose redGoalPose = new Pose(130, 136);
-    private Pose goalPose;
+    private Pose goalPose = blueGoalPose;
 
     public LaunchSystem(Configuration config) {
         this.lm1 = config.launchMotor1;
@@ -40,7 +40,7 @@ public class LaunchSystem {
         lm2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
-    private boolean trackingEnabled = true;
+    private boolean trackingEnabled = false;
 
     public void toggleTracking() {
         trackingEnabled = !trackingEnabled;
@@ -87,6 +87,7 @@ public class LaunchSystem {
         this.currentTargetVelocity = target;
         launchTimer.reset();
         isLaunching = true;
+        resetTimer = true;
         setDualVelocity(currentTargetVelocity);
     }
 
@@ -96,15 +97,24 @@ public class LaunchSystem {
         setDualVelocity(idleVelocity);
     }
 
+    public boolean resetTimer= true;
+
     public boolean update() {
         if (!isLaunching) return true;
-        if(getVelocity()>=currentTargetVelocity)
-            if (launchTimer.milliseconds() < 1000) {
-                stopper.setPosition(passBall);
-                im.setPower(1);
+
+        // Check if flywheels are at target speed
+        if (getVelocity() >= (currentTargetVelocity - 50)) {
+            if(resetTimer){
+                launchTimer.reset();
+                resetTimer = false;
+            }
+            stopper.setPosition(passBall);
+            im.setPower(1);
+
+            if (launchTimer.milliseconds() > 1000) {
                 return true;
             }
-
+        }
         return false;
     }
 
@@ -126,9 +136,9 @@ public class LaunchSystem {
         return turret.getCurrentPosition();
     }
 
-    public void addOffset(){
-        if(gamepad1.dpadDownWasPressed()) turretOffset -=10;
-        if(gamepad1.dpadUpWasPressed()) turretOffset +=10;
+    public void addOffset(com.qualcomm.robotcore.hardware.Gamepad gamepad) {
+        if(gamepad.dpadDownWasPressed()) turretOffset -= 10;
+        if(gamepad.dpadUpWasPressed()) turretOffset += 10;
     }
 
     public void setGoal(Pose pose){

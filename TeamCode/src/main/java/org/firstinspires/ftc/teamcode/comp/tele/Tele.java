@@ -26,18 +26,23 @@ public class Tele extends OpMode {
     public static Pose startPose; private Configuration config;
     public enum State{PIKCUP, LAUNCH} public State state = State.PIKCUP;
     public boolean idle = true;
+    public double angle = 0.5, speed = 1500;
+    public boolean autoHood = false;
+
+    // blue reset pose (30, 131, Math.toRadians(143))
 
     @Override
     public void init() {
         follower = Constants.createFollower(hardwareMap);
-        if (startPose != null) {
-            follower.setStartingPose(startPose);
-            startPose = null;
-        } else {
+//        if (startPose != null) {
+//            follower.setStartingPose(startPose);
+//            startPose = null;
+//        } else {
             follower.setStartingPose(new Pose(8, 7, Math.toRadians(180)));
-        }
+//        }
         config = new Configuration(hardwareMap);
         launchSystem = new LaunchSystem(config);
+        follower.update();
     }
 
     @Override
@@ -45,26 +50,37 @@ public class Tele extends OpMode {
         if(gamepad1.xWasPressed())  launchSystem.setGoal(launchSystem.blueGoalPose);
         if(gamepad1.bWasPressed())  launchSystem.setGoal(launchSystem.redGoalPose);
 
-        telemetry.addData("goal pose x: ", launchSystem.getGoal().getX());
-        telemetry.addData("goal pose y: ", launchSystem.getGoal().getY());
+//        telemetry.addData("goal pose x: ", launchSystem.getGoal().getX());
+//        telemetry.addData("goal pose y: ", launchSystem.getGoal().getY());
         telemetry.update();
+    }
+
+    @Override
+    public void start() {
+        // Prepare motors for TeleOp (sets brake modes, etc.)
+        follower.startTeleopDrive();
     }
 
     @Override
     public void loop() {
         follower.update();
-        follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
+        follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x * 0.75, true);
+//        handleMovement();
         stateMachine();
 
         launchSystem.updateTurret(follower.getPose());
-        launchSystem.addOffset();
+        launchSystem.addOffset(gamepad1);
+//        angleCalculator(launchSystem.getDistanceToGoal(follower.getPose()));
         angleCalculator();
+        speedCalculator();
 
-        telemetry.addData("state: ", state);
-        telemetry.addData("flywheel velocity", launchSystem.getVelocity());
-        telemetry.update();
+        if(gamepad1.rightBumperWasPressed())
+            follower.setPose(new Pose(30 ,131, Math.toRadians(144)));
+
         displayData();
     }
+
+
 
     public void stateMachine(){
         if (gamepad1.aWasPressed()) {
@@ -81,7 +97,7 @@ public class Tele extends OpMode {
 
                 if(gamepad1.yWasPressed()) {
                     state = State.LAUNCH;
-                    launchSystem.start(speedCalculator());
+                    launchSystem.start(speed);
                 }
                 break;
             }
@@ -96,24 +112,65 @@ public class Tele extends OpMode {
 
     //TODO: FIND THE FORMULA FOR HOOD POS AND LAUNCH SPEED
 
-    public double speedCalculator(){
-        double dist = launchSystem.getDistanceToGoal(follower.getPose());
-        double speed = dist*2;          //havent found formula yet
+    /*public double speedCalculator(double dist){
+        speed = dist*2;          //havent found formula yet
         return speed;
+    }*/
+
+    public void speedCalculator(){
+        if(gamepad1.bWasPressed()) speed +=100;
+        if(gamepad1.xWasPressed()) speed -=100;
+
     }
 
-    public void angleCalculator(){
-        double dist = launchSystem.getDistanceToGoal(follower.getPose());
-        double angle = dist*2;
+    /*public void angleCalculator(double dist){
+        if(autoHood) {
+            dist = launchSystem.getDistanceToGoal(follower.getPose());
+            angle = dist * 2;
+        }
+        else {
+            if (gamepad1.dpadUpWasPressed()) angle += 0.05;
+            if (gamepad1.dpadDownWasPressed()) angle -= 0.05;
+        }
         //havent found formula yet
         config.marco.setPosition(Range.clip(angle, 0.16, 0.85));
+    }*/
+
+    public void angleCalculator(){
+        if (gamepad1.dpadRightWasPressed()) angle += 0.05;
+        if (gamepad1.dpadLeftWasPressed()) angle -= 0.05;
+
+        angle = Range.clip(angle, 0.16, 0.85);
+        config.marco.setPosition(angle);
     }
 
     public void displayData(){
         telemetry.addData("turret ticks: ", launchSystem.getTurretTicks());
         telemetry.addData("turret offset: ", launchSystem.turretOffset);
+        telemetry.addData("turret speed: ", speed);
+        telemetry.addData("turret angle: ", angle);
+
+        telemetry.addData("getx: ", follower.getPose().getX());
+        telemetry.addData("gety: ", follower.getPose().getY());
+        telemetry.addData("heading: ", Math.toRadians(follower.getPose().getHeading()));
+
+        telemetry.addData("state: ", state);
+        telemetry.addData("flywheel velocity", launchSystem.getVelocity());
+
 
         telemetry.update();
+    }
+
+    private void handleMovement() {
+        double y = -gamepad1.left_stick_y;
+        double x = gamepad1.left_stick_x;
+        double rx = gamepad1.right_stick_x / 2.0;
+        double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
+
+        config.setMotorPowers(
+                (y + x + rx) / denominator, (y - x + rx) / denominator,
+                (y - x - rx) / denominator, (y + x - rx) / denominator
+        );
     }
 
 }

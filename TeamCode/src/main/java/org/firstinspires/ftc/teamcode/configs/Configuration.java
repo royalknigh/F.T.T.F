@@ -89,5 +89,12 @@ public class Configuration {
         intakeMotor.setMotorType(configIntakeMotor);
     }
 
+    public void setMotorPowers(double frontLeftPower, double backLeftPower, double frontRightPower, double backRightPower) {
+        frontLeftMotor.setPower(frontLeftPower);
+        backLeftMotor.setPower(backLeftPower);
+        frontRightMotor.setPower(frontRightPower);
+        backRightMotor.setPower(backRightPower);
+    }
+
 
 }
