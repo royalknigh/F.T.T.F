@@ -67,7 +67,6 @@ public class Auto extends OpMode {
         launchSystem.updateTurret(follower.getPose());
         autonomousPathUpdate();
         telemetry.addData("Path State", pathState);
-        telemetry.addData("turret ticks: ", launchSystem.getTurretTicks());
         telemetry.update();
     }
 

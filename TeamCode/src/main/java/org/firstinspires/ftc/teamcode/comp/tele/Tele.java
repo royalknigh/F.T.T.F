@@ -22,155 +22,88 @@ import java.util.function.Supplier;
 @Configurable
 @TeleOp
 public class Tele extends OpMode {
-    private Follower follower; private LaunchSystem launchSystem;
-    public static Pose startPose; private Configuration config;
-    public enum State{PIKCUP, LAUNCH} public State state = State.PIKCUP;
-    public boolean idle = true;
-    public double angle = 0.5, speed = 1500;
-    public boolean autoHood = false;
+    private Follower follower;
+    private LaunchSystem launchSystem;
+    private Configuration config;
 
-    // blue reset pose (30, 131, Math.toRadians(143))
+    public static Pose startPose;
+
+    public enum State { PIKCUP, LAUNCH }
+    public State state = State.PIKCUP;
+    public double angle = 0.5, speed = 1500;
+    public boolean idle = true;
 
     @Override
     public void init() {
         follower = Constants.createFollower(hardwareMap);
-//        if (startPose != null) {
-//            follower.setStartingPose(startPose);
-//            startPose = null;
-//        } else {
-            follower.setStartingPose(new Pose(8, 7, Math.toRadians(180)));
-//        }
+        follower.setStartingPose(new Pose(8, 7, Math.toRadians(180)));
         config = new Configuration(hardwareMap);
         launchSystem = new LaunchSystem(config);
-        follower.update();
-    }
-
-    @Override
-    public void init_loop(){
-        if(gamepad1.xWasPressed())  launchSystem.setGoal(launchSystem.blueGoalPose);
-        if(gamepad1.bWasPressed())  launchSystem.setGoal(launchSystem.redGoalPose);
-
-//        telemetry.addData("goal pose x: ", launchSystem.getGoal().getX());
-//        telemetry.addData("goal pose y: ", launchSystem.getGoal().getY());
-        telemetry.update();
-    }
-
-    @Override
-    public void start() {
-        // Prepare motors for TeleOp (sets brake modes, etc.)
-        follower.startTeleopDrive();
     }
 
     @Override
     public void loop() {
         follower.update();
         follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x * 0.75, true);
-//        handleMovement();
-        stateMachine();
 
+        // Update Turret and Shooting Logic
+        stateMachine();
         launchSystem.updateTurret(follower.getPose());
-        launchSystem.addOffset(gamepad1);
-//        angleCalculator(launchSystem.getDistanceToGoal(follower.getPose()));
+
+        // --- Nudge Controls (D-Pad Left/Right) ---
+        if (gamepad1.dpad_right) launchSystem.turretOffset += 5;
+        if (gamepad1.dpad_left)  launchSystem.turretOffset -= 5;
+
+        // --- Hood & Velocity Controls ---
         angleCalculator();
         speedCalculator();
-
-        if(gamepad1.rightBumperWasPressed())
-            follower.setPose(new Pose(30 ,131, Math.toRadians(144)));
 
         displayData();
     }
 
+    public void stateMachine() {
+        if (gamepad1.aWasPressed()) launchSystem.toggleTracking();
+        if (gamepad1.xWasPressed()) launchSystem.startReset();
 
+        switch (state) {
+            case PIKCUP:
+                if (gamepad1.leftBumperWasPressed()) idle = !idle;
+                if (idle) launchSystem.idle(); else launchSystem.fullStop();
+                config.intakeMotor.setPower(gamepad1.left_trigger > 0.1 ? gamepad1.left_trigger : 0);
 
-    public void stateMachine(){
-        if (gamepad1.aWasPressed()) {
-            launchSystem.toggleTracking();
-        }
-        switch (state){
-            case PIKCUP: {
-                if(gamepad1.leftBumperWasPressed())
-                    idle=!idle;
-                if(idle) launchSystem.idle();
-                else launchSystem.fullStop();
-                double intakePower = (gamepad1.left_trigger>0.1)? gamepad1.left_trigger : 0;
-                config.intakeMotor.setPower(intakePower);
-
-                if(gamepad1.yWasPressed()) {
+                if (gamepad1.yWasPressed()) {
                     state = State.LAUNCH;
                     launchSystem.start(speed);
                 }
                 break;
-            }
-            case LAUNCH:{
-                if(launchSystem.update()) {
+            case LAUNCH:
+                if (launchSystem.update()) {
                     state = State.PIKCUP;
                 }
                 break;
-            }
         }
     }
 
-    //TODO: FIND THE FORMULA FOR HOOD POS AND LAUNCH SPEED
+    public void displayData() {
+        telemetry.addData("--- TURRET ---", "");
+        telemetry.addData("Mode", launchSystem.isTracking() ? "AUTO-AIM" : "MANUAL/RESET");
+        telemetry.addData("Target Deg", "%.2f", launchSystem.getTargetDeg(follower.getPose()));
+        telemetry.addData("Current Deg", "%.2f", launchSystem.getCurrentDeg());
+        telemetry.addData("Offset (Ticks)", launchSystem.turretOffset);
 
-    /*public double speedCalculator(double dist){
-        speed = dist*2;          //havent found formula yet
-        return speed;
-    }*/
+        telemetry.addData("--- LOCALIZATION ---", "");
+        telemetry.addData("Heading", "%.2f Deg", Math.toDegrees(follower.getPose().getHeading()));
 
-    public void speedCalculator(){
-        if(gamepad1.bWasPressed()) speed +=100;
-        if(gamepad1.xWasPressed()) speed -=100;
-
-    }
-
-    /*public void angleCalculator(double dist){
-        if(autoHood) {
-            dist = launchSystem.getDistanceToGoal(follower.getPose());
-            angle = dist * 2;
-        }
-        else {
-            if (gamepad1.dpadUpWasPressed()) angle += 0.05;
-            if (gamepad1.dpadDownWasPressed()) angle -= 0.05;
-        }
-        //havent found formula yet
-        config.marco.setPosition(Range.clip(angle, 0.16, 0.85));
-    }*/
-
-    public void angleCalculator(){
-        if (gamepad1.dpadRightWasPressed()) angle += 0.05;
-        if (gamepad1.dpadLeftWasPressed()) angle -= 0.05;
-
-        angle = Range.clip(angle, 0.16, 0.85);
-        config.marco.setPosition(angle);
-    }
-
-    public void displayData(){
-        telemetry.addData("turret ticks: ", launchSystem.getTurretTicks());
-        telemetry.addData("turret offset: ", launchSystem.turretOffset);
-        telemetry.addData("turret speed: ", speed);
-        telemetry.addData("turret angle: ", angle);
-
-        telemetry.addData("getx: ", follower.getPose().getX());
-        telemetry.addData("gety: ", follower.getPose().getY());
-        telemetry.addData("heading: ", Math.toRadians(follower.getPose().getHeading()));
-
-        telemetry.addData("state: ", state);
-        telemetry.addData("flywheel velocity", launchSystem.getVelocity());
-
-
+        telemetry.addData("--- FLYWHEEL ---", "");
+        telemetry.addData("Velocity", "%.0f / %.0f", launchSystem.getVelocity(), speed);
         telemetry.update();
     }
 
-    private void handleMovement() {
-        double y = -gamepad1.left_stick_y;
-        double x = gamepad1.left_stick_x;
-        double rx = gamepad1.right_stick_x / 2.0;
-        double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
+    public void angleCalculator(){
 
-        config.setMotorPowers(
-                (y + x + rx) / denominator, (y - x + rx) / denominator,
-                (y - x - rx) / denominator, (y + x - rx) / denominator
-        );
     }
 
+    public void speedCalculator(){
+
+    }
 }

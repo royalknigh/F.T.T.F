@@ -81,7 +81,7 @@ public class AutoBlueLong extends OpMode {
                 setPathState(1);
                 break;
             case 1:
-                if (!follower.isBusy()&&launchSystem.update()) {
+                if (!follower.isBusy() &&launchSystem.update()) {
 //                  limelightController.toggleTracking();
                     follower.setMaxPower(0.8);
                     follower.followPath(alignRow);
@@ -163,7 +163,6 @@ public class AutoBlueLong extends OpMode {
         launchSystem.updateTurret(follower.getPose());
         autonomousPathUpdate();
         telemetry.addData("Path State", pathState);
-        telemetry.addData("turret ticks: ", launchSystem.getTurretTicks());
         telemetry.update();
     }
 
