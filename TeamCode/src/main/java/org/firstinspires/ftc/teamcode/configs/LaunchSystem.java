@@ -23,6 +23,9 @@ public class LaunchSystem {
     private double lastError = 0;
     private double integralSum = 0;
 
+    public double P =40;
+    public double F = 15;
+
     // --- Gearing Logic ---
     // Motor: 145.1 ticks | Gear Ratio: 190/45 (4.22)
     // Formula: (TicksPerRev * GearRatio) / 360
@@ -47,8 +50,18 @@ public class LaunchSystem {
         lm1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         lm2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        lm1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        lm2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        lm1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        lm2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        lm1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        lm2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+
+        updatePIDF();
+    }
+
+    public void updatePIDF() {
+        lm1.setVelocityPIDFCoefficients(P, 0, 0, F);
+        lm2.setVelocityPIDFCoefficients(P, 0, 0, F);
     }
 
     // Top of LaunchSystem.java
@@ -122,6 +135,7 @@ public class LaunchSystem {
 
     // --- Flywheel Logic ---
     public boolean update() {
+        updatePIDF();
         if (!isLaunching) return true;
         if (getVelocity() >= (currentTargetVelocity)) {
             if(resetTimer){ launchTimer.reset(); resetTimer = false; }
