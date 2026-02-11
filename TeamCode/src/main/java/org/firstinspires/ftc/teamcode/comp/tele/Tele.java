@@ -25,9 +25,7 @@ public class Tele extends OpMode {
     private Follower follower;
     private LaunchSystem launchSystem;
     private Configuration config;
-
     public static Pose startPose;
-
     public enum State { PIKCUP, LAUNCH }
     public State state = State.PIKCUP;
     public double angle = 0.5, speed = 1500;
@@ -50,7 +48,7 @@ public class Tele extends OpMode {
     @Override
     public void loop() {
         follower.update();
-        follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x * 0.75, true);
+        follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x * 0.5, true);
 
         // Update Turret and Shooting Logic
         stateMachine();
@@ -106,10 +104,14 @@ public class Tele extends OpMode {
     }
 
     public void angleCalculator(){
-
+        if(gamepad1.dpadUpWasPressed()) angle += 0.05;
+        if(gamepad1.dpadDownWasPressed()) angle -= 0.05;
+        angle = Range.clip(angle, 0.15, 0.85);
+        config.marco.setPosition(angle);
     }
 
     public void speedCalculator(){
+
 
     }
 }

@@ -26,7 +26,7 @@ public class LaunchSystem {
     // --- Gearing Logic ---
     // Motor: 145.1 ticks | Gear Ratio: 190/45 (4.22)
     // Formula: (TicksPerRev * GearRatio) / 360
-    private final double TICKS_PER_DEGREE = (145.1 * (190.0 / 45.0)) / 360.0;
+    private final double TICKS_PER_DEGREE = (537.7 * (190.0 / 45.0)) / 360.0;
 
     public int turretOffset = 0; // Controlled by D-pad in TeleOp
     private boolean trackingEnabled = false;
@@ -87,7 +87,7 @@ public class LaunchSystem {
         turretTimer.reset();
 
         integralSum = Range.clip(integralSum + (error * dt), -0.5, 0.5);
-        double derivative = (lastError-error) / dt;
+        double derivative = (error - lastError) / dt;
         lastError = error;
 
         double power = (error * turretP) + (integralSum * turretI) + (derivative * turretD);
