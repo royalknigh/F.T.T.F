@@ -14,7 +14,7 @@ public class LaunchSystem {
     private ElapsedTime turretTimer = new ElapsedTime();
 
     public static double currentTargetVelocity, idleVelocity = 900;
-    public double holdBall = 0.71, passBall = 0.95;
+    public double holdBall = 0.56, passBall = 0.95;
 
     // --- PID Constants ---
     public static double turretP = 0.02;
@@ -154,4 +154,11 @@ public class LaunchSystem {
     public void fullStop() { isLaunching = false; lm1.setVelocity(0); lm2.setVelocity(0); }
     public double getVelocity() { return (lm1.getVelocity() + lm2.getVelocity()) / 2.0; }
     public void setGoal(Pose pose) { goalPose = pose; }
+
+    public double returnDistance(Pose robotPose){
+        double dx = goalPose.getX() - robotPose.getX();
+        double dy = goalPose.getY() - robotPose.getY();
+        double angleToGoalDeg = Math.hypot(dy, dx);
+        return angleToGoalDeg;
+    }
 }

@@ -55,12 +55,13 @@ public class Tele extends OpMode {
         launchSystem.updateTurret(follower.getPose());
 
         // --- Nudge Controls (D-Pad Left/Right) ---
-        if (gamepad1.dpad_right) launchSystem.turretOffset += 5;
-        if (gamepad1.dpad_left)  launchSystem.turretOffset -= 5;
+
+
+        if(gamepad1.rightBumperWasPressed())    follower.setPose(new Pose(30, 131, Math.toRadians(143)));
 
         // --- Hood & Velocity Controls ---
-        angleCalculator();
-        speedCalculator();
+        angleCalculator(launchSystem.returnDistance(follower.getPose()));
+        speedCalculator(launchSystem.returnDistance(follower.getPose()));
 
         displayData();
     }
@@ -94,24 +95,35 @@ public class Tele extends OpMode {
         telemetry.addData("Target Deg", "%.2f", launchSystem.getTargetDeg(follower.getPose()));
         telemetry.addData("Current Deg", "%.2f", launchSystem.getCurrentDeg());
         telemetry.addData("Offset (Ticks)", launchSystem.turretOffset);
+        telemetry.addData("Launcher Angle: ", angle);
 
         telemetry.addData("--- LOCALIZATION ---", "");
         telemetry.addData("Heading", "%.2f Deg", Math.toDegrees(follower.getPose().getHeading()));
+        telemetry.addData("x: ", follower.getPose().getX()) ;
+        telemetry.addData("y: ", follower.getPose().getY()) ;
+
+        telemetry.addData("distance", launchSystem.returnDistance(follower.getPose()));
 
         telemetry.addData("--- FLYWHEEL ---", "");
         telemetry.addData("Velocity", "%.0f / %.0f", launchSystem.getVelocity(), speed);
         telemetry.update();
     }
 
-    public void angleCalculator(){
-        if(gamepad1.dpadUpWasPressed()) angle += 0.05;
-        if(gamepad1.dpadDownWasPressed()) angle -= 0.05;
+    public void angleCalculator(double x){
+//        if(gamepad1.dpadUpWasPressed()) angle += 0.05;
+//        if(gamepad1.dpadDownWasPressed()) angle -= 0.05;
+        angle = -0.0000831572*x*x +0.0212018*x-0.577907;
         angle = Range.clip(angle, 0.15, 0.85);
         config.marco.setPosition(angle);
     }
 
-    public void speedCalculator(){
-
+    public void speedCalculator(double x){
+//        if (gamepad1.dpadRightWasPressed()) speed += 50;
+//        if (gamepad1.dpadLeftWasPressed())  speed -= 50;
+        speed = 8.63782*x+1062.5;
+        speed = Range.clip(speed, 1000, 2500);
 
     }
+
+
 }

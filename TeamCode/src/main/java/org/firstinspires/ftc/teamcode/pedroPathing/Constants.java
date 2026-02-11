@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.pedroPathing;
 
+import com.pedropathing.control.FilteredPIDFCoefficients;
+import com.pedropathing.control.PIDFCoefficients;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.follower.FollowerConstants;
 import com.pedropathing.ftc.FollowerBuilder;
@@ -12,7 +14,14 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 public class Constants {
     public static FollowerConstants followerConstants = new FollowerConstants()
+            .forwardZeroPowerAcceleration(-34.39)
+            .lateralZeroPowerAcceleration(-64.1) //-78.62  -68.60  -55.29   -74.72   -43.69
+            .translationalPIDFCoefficients(new PIDFCoefficients(0.05, 0, 0.01, 0))
+            .headingPIDFCoefficients(new PIDFCoefficients(0.6, 0, 0.01, 0.005))
+            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.01, 0, 0.00001, 0.6, 0.01))
+            .centripetalScaling(0.00043)
             .mass(12);
+
 
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
 
@@ -30,23 +39,23 @@ public class Constants {
             .rightRearMotorName("br")
             .leftRearMotorName("bl")
             .leftFrontMotorName("fl")
-            .xVelocity(68.74)
-            .yVelocity(63)
+            .xVelocity(77.82)
+            .yVelocity(62.59)
             .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
             .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
             .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
             .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD);
 
     public static ThreeWheelConstants localizerConstants = new ThreeWheelConstants()
-            .forwardTicksToInches(.001981480234)
-            .strafeTicksToInches(.00197860454) //
-            .turnTicksToInches(0.002116752641) //.001989436789
+            .forwardTicksToInches(.0019899148)//.001981480234
+            .strafeTicksToInches(.00197860454) //.00197860454
+            .turnTicksToInches(.00209169437) //0.002116752641
             .leftPodY(0)
             .rightPodY(-3.1496)
-            .strafePodX(-2.99)//-7.08
+            .strafePodX(-7.08)
             .leftEncoder_HardwareMapName("fr")
-            .rightEncoder_HardwareMapName("im")
-            .strafeEncoder_HardwareMapName("fl")
+            .rightEncoder_HardwareMapName("fl")
+            .strafeEncoder_HardwareMapName("im")
             .leftEncoderDirection(Encoder.FORWARD)
             .rightEncoderDirection(Encoder.REVERSE)
             .strafeEncoderDirection(Encoder.REVERSE);
