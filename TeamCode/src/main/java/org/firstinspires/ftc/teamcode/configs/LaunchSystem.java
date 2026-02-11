@@ -26,7 +26,6 @@ public class LaunchSystem {
     // --- Gearing Logic ---
     // Motor: 145.1 ticks | Gear Ratio: 190/45 (4.22)
     // Formula: (TicksPerRev * GearRatio) / 360
-    private final double TICKS_PER_DEGREE = (537.7 * (190.0 / 45.0)) / 360.0;
 
     public int turretOffset = 0; // Controlled by D-pad in TeleOp
     private boolean trackingEnabled = false;
@@ -45,40 +44,47 @@ public class LaunchSystem {
         this.turret = config.turretMotor;
         this.stopper = config.stopper;
 
+        lm1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        lm2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         lm1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         lm2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
+
+    // Top of LaunchSystem.java
+// Updated math: (537.6 TPR * (190/45 Gear Ratio)) / 360 degrees
+    private final double TICKS_PER_DEGREE = (537.6 * (190.0 / 45.0)) / 360.0;
 
     public void updateTurret(Pose robotPose) {
         double targetLocalDeg = 0;
 
         if (isResetting) {
             targetLocalDeg = 0;
-            // Stop resetting state once within 1 degree of front
             if (Math.abs(getCurrentDeg()) < 1.0) isResetting = false;
         } else if (trackingEnabled) {
-            // 1. Calculate Field-Relative Angle to Goal
+            // dx and dy calculate the distance to the FIELD goal from your CURRENT robot pose
             double dx = goalPose.getX() - robotPose.getX();
             double dy = goalPose.getY() - robotPose.getY();
             double angleToGoalDeg = Math.toDegrees(Math.atan2(dy, dx));
 
-            // 2. Normalize Robot Heading (Input is Radians, convert to [-180, 180])
+            // Normalize Robot Heading to [-180, 180]
             double robotHeadingDeg = Math.toDegrees(robotPose.getHeading());
             double normalizedRobotHeading = ((robotHeadingDeg + 180) % 360 + 360) % 360 - 180;
 
-            // 3. Target Local Angle = Goal Angle - Robot Heading + Manual Offset
-            targetLocalDeg = (angleToGoalDeg - normalizedRobotHeading) + (turretOffset / TICKS_PER_DEGREE);
+            // How much the turret needs to turn relative to the front of the robot
+            targetLocalDeg = (angleToGoalDeg - normalizedRobotHeading);
         } else {
             turret.setPower(0);
             return;
         }
 
-        // --- PID Implementation ---
+        // Apply manual nudge (Offset)
+        targetLocalDeg += (turretOffset / TICKS_PER_DEGREE);
+
         double currentLocalDeg = getCurrentDeg();
         double error = targetLocalDeg - currentLocalDeg;
 
-        // Ensure turret takes the shortest path
+        // Shortest path logic
         while (error > 180) error -= 360;
         while (error < -180) error += 360;
 
@@ -86,21 +92,20 @@ public class LaunchSystem {
         if (dt <= 0) dt = 0.001;
         turretTimer.reset();
 
+        // PID Calculations
         integralSum = Range.clip(integralSum + (error * dt), -0.5, 0.5);
-        double derivative = (error - lastError) / dt;
+        double derivative = (error - lastError) / dt; // FIXED: error - lastError
         lastError = error;
 
         double power = (error * turretP) + (integralSum * turretI) + (derivative * turretD);
 
-        // --- Soft Limits ---
-        // Prevents spinning past ±160 degrees to protect wires
+        // Soft Limits (±160 degrees) to protect wires
         if (currentLocalDeg > 160 && power > 0) power = 0;
         if (currentLocalDeg < -160 && power < 0) power = 0;
 
         turret.setPower(Range.clip(power, -1.0, 1.0));
     }
 
-    // --- Diagnostic Getters for Telemetry ---
     public double getTargetDeg(Pose robotPose) {
         double dx = goalPose.getX() - robotPose.getX();
         double dy = goalPose.getY() - robotPose.getY();
