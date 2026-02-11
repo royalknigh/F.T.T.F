@@ -23,14 +23,13 @@ public class LaunchSystem {
     private double lastError = 0;
     private double integralSum = 0;
 
-    public double P =40;
-    public double F = 15;
+    public double P = 30;
+    public double F = 13.5;
 
-    // --- Gearing Logic ---
-    // Motor: 145.1 ticks | Gear Ratio: 190/45 (4.22)
-    // Formula: (TicksPerRev * GearRatio) / 360
+    // --- Gearing Logic (537.6 TPR Motor | 190/45 Ratio) ---
+    private final double TICKS_PER_DEGREE = (537.6 * (190.0 / 45.0)) / 360.0;
 
-    public int turretOffset = 0; // Controlled by D-pad in TeleOp
+    public int turretOffset = 0;
     private boolean trackingEnabled = false;
     private boolean isResetting = false;
     private boolean isLaunching = false;
@@ -49,9 +48,12 @@ public class LaunchSystem {
 
         lm1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         lm2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
         lm1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         lm2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        // Turret init
+        turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         lm1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         lm2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -64,10 +66,6 @@ public class LaunchSystem {
         lm2.setVelocityPIDFCoefficients(P, 0, 0, F);
     }
 
-    // Top of LaunchSystem.java
-// Updated math: (537.6 TPR * (190/45 Gear Ratio)) / 360 degrees
-    private final double TICKS_PER_DEGREE = (537.6 * (190.0 / 45.0)) / 360.0;
-
     public void updateTurret(Pose robotPose) {
         double targetLocalDeg = 0;
 
@@ -75,29 +73,29 @@ public class LaunchSystem {
             targetLocalDeg = 0;
             if (Math.abs(getCurrentDeg()) < 1.0) isResetting = false;
         } else if (trackingEnabled) {
-            // dx and dy calculate the distance to the FIELD goal from your CURRENT robot pose
+            // 1. Get Global Angle to Goal (Field Space)
             double dx = goalPose.getX() - robotPose.getX();
             double dy = goalPose.getY() - robotPose.getY();
             double angleToGoalDeg = Math.toDegrees(Math.atan2(dy, dx));
 
-            // Normalize Robot Heading to [-180, 180]
+            // 2. Get Robot Heading in Degrees
             double robotHeadingDeg = Math.toDegrees(robotPose.getHeading());
-            double normalizedRobotHeading = ((robotHeadingDeg + 180) % 360 + 360) % 360 - 180;
 
-            // How much the turret needs to turn relative to the front of the robot
-            targetLocalDeg = (angleToGoalDeg - normalizedRobotHeading);
+            // 3. Calculation: Target = GoalAngle - RobotHeading
+            // NOTE: If the turret turns WITH the robot instead of AGAINST it,
+            // change this to: targetLocalDeg = (robotHeadingDeg - angleToGoalDeg);
+            targetLocalDeg = (angleToGoalDeg - robotHeadingDeg);
         } else {
             turret.setPower(0);
             return;
         }
 
-        // Apply manual nudge (Offset)
         targetLocalDeg += (turretOffset / TICKS_PER_DEGREE);
 
         double currentLocalDeg = getCurrentDeg();
         double error = targetLocalDeg - currentLocalDeg;
 
-        // Shortest path logic
+        // Wrap error for shortest path
         while (error > 180) error -= 360;
         while (error < -180) error += 360;
 
@@ -105,14 +103,13 @@ public class LaunchSystem {
         if (dt <= 0) dt = 0.001;
         turretTimer.reset();
 
-        // PID Calculations
         integralSum = Range.clip(integralSum + (error * dt), -0.5, 0.5);
-        double derivative = (error - lastError) / dt; // FIXED: error - lastError
+        double derivative = (error - lastError) / dt;
         lastError = error;
 
         double power = (error * turretP) + (integralSum * turretI) + (derivative * turretD);
 
-        // Soft Limits (±160 degrees) to protect wires
+        // Soft Limits
         if (currentLocalDeg > 160 && power > 0) power = 0;
         if (currentLocalDeg < -160 && power < 0) power = 0;
 
@@ -124,16 +121,22 @@ public class LaunchSystem {
         double dy = goalPose.getY() - robotPose.getY();
         double angleToGoalDeg = Math.toDegrees(Math.atan2(dy, dx));
         double robotHeadingDeg = Math.toDegrees(robotPose.getHeading());
-        double normalizedRobotHeading = ((robotHeadingDeg + 180) % 360 + 360) % 360 - 180;
-        return (angleToGoalDeg - normalizedRobotHeading) + (turretOffset / TICKS_PER_DEGREE);
+        return (angleToGoalDeg - robotHeadingDeg) + (turretOffset / TICKS_PER_DEGREE);
     }
 
     public double getCurrentDeg() { return turret.getCurrentPosition() / TICKS_PER_DEGREE; }
+
+    public void resetTurretEncoder() {
+        turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        lastError = 0;
+        integralSum = 0;
+    }
+
     public boolean isTracking() { return trackingEnabled; }
     public void toggleTracking() { trackingEnabled = !trackingEnabled; isResetting = false; }
     public void startReset() { isResetting = true; trackingEnabled = false; }
 
-    // --- Flywheel Logic ---
     public boolean update() {
         updatePIDF();
         if (!isLaunching) return true;
@@ -172,7 +175,6 @@ public class LaunchSystem {
     public double returnDistance(Pose robotPose){
         double dx = goalPose.getX() - robotPose.getX();
         double dy = goalPose.getY() - robotPose.getY();
-        double angleToGoalDeg = Math.hypot(dy, dx);
-        return angleToGoalDeg;
+        return Math.hypot(dx, dy);
     }
 }

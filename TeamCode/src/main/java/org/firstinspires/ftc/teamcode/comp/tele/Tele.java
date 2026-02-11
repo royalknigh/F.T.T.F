@@ -120,7 +120,7 @@ public class Tele extends OpMode {
     public void speedCalculator(double x){
 //        if (gamepad1.dpadRightWasPressed()) speed += 50;
 //        if (gamepad1.dpadLeftWasPressed())  speed -= 50;
-        speed = 8.63782*x+1062.5;
+        speed = 8.63782*x+1062.5 + 100;
         speed = Range.clip(speed, 1000, 2500);
 
     }
