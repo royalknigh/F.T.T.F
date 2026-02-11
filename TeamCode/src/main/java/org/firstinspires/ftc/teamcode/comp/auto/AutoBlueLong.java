@@ -20,14 +20,14 @@ public class AutoBlueLong extends OpMode {
     private Timer pathTimer;
     private int pathState = 0;
     private final Pose startPose = new Pose(55, 9, Math.toRadians(90));
-    private final Pose scorePose = new Pose(60, 13, Math.toRadians(70));
-    private final Pose lineup = new Pose(43, 35, Math.toRadians(0));
-    private final Pose pickupPose = new Pose(12, 35, Math.toRadians(0));
-    private final Pose topLineup = new Pose(7, 25, Math.toRadians(270));
-    private final Pose topPickup = new Pose(7, 11, Math.toRadians(270));
-    private final Pose gatePickup = new Pose(7, 11, Math.toRadians(90));
+    private final Pose scorePose = new Pose(60, 13, Math.toRadians(130));
+    private final Pose lineup = new Pose(43, 35, Math.toRadians(180));
+    private final Pose pickupPose = new Pose(12, 35, Math.toRadians(180));
+    private final Pose bottomPose = new Pose(12, 11, Math.toRadians(180));
+    private final Pose gatePickup = new Pose(12, 11, Math.toRadians(90));
     private LaunchSystem launchSystem;
-    private PathChain scorePreload, alignRow, pickupRow, score, alignTop, pickupTop, score2, bottomLineup;
+    private Configuration configuration;
+    private PathChain scorePreload, alignRow, pickupRow, score, pickupBottom, score2, bottomLineup;
     // scorePreload ( startPose - > scorePose ) : 1
     // alignRow ( scorePose - > lineup ) : 2
     // pickupRow ( lineup -> pickupPose ) : 3
@@ -54,18 +54,14 @@ public class AutoBlueLong extends OpMode {
                 // .addParametricCallback(0.9, () -> launchSystem.start(LaunchSystem.highVelocity, interval))
                 .setLinearHeadingInterpolation(pickupPose.getHeading(), scorePose.getHeading())
                 .build();
-        alignTop = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose, topLineup))
-                .setLinearHeadingInterpolation(scorePose.getHeading(), topLineup.getHeading())
-                .build();
-        pickupTop = follower.pathBuilder()
-                .addPath(new BezierLine(topLineup, topPickup))
-                .setLinearHeadingInterpolation(topLineup.getHeading(), topPickup.getHeading())
+        pickupBottom = follower.pathBuilder()
+                .addPath(new BezierLine(scorePose, bottomPose))
+                .setLinearHeadingInterpolation(scorePose.getHeading(), bottomPose.getHeading())
                 .build();
         score2 = follower.pathBuilder()
-                .addPath(new BezierLine(topPickup, scorePose))
+                .addPath(new BezierLine(bottomPose, scorePose))
 //                    .addParametricCallback(0.5, () -> launchSystem.start(LaunchSystem.highVelocity, interval))
-                .setLinearHeadingInterpolation(topPickup.getHeading(), scorePose.getHeading())
+                .setLinearHeadingInterpolation(bottomPose.getHeading(), scorePose.getHeading())
                 .build();
         bottomLineup = follower.pathBuilder()
                 .addPath(new BezierLine(scorePose, gatePickup))
@@ -81,8 +77,7 @@ public class AutoBlueLong extends OpMode {
                 setPathState(1);
                 break;
             case 1:
-                if (!follower.isBusy() &&launchSystem.update()) {
-//                  limelightController.toggleTracking();
+                if (!follower.isBusy()&&launchSystem.update()) {
                     follower.setMaxPower(0.8);
                     follower.followPath(alignRow);
                     launchSystem.fullStop();
@@ -91,43 +86,36 @@ public class AutoBlueLong extends OpMode {
             case 2:
                 if (!follower.isBusy()) {
                     follower.followPath(pickupRow);
-//                  motorConfig.intakeMotor.setPower(0.8);
-                    // add motor config ^
+                    configuration.intakeMotor.setPower(0.8);
                     follower.setMaxPower(0.4);
                     setPathState(3);
                 }
             case 3:
                 if (!follower.isBusy()) {
                     follower.followPath(score);
-                    //motorConfig.intakeMotor.setPower(0);
+                    configuration.intakeMotor.setPower(0);
                     follower.setMaxPower(0.8);
                     setPathState(4);
                 }
             case 4:
                 if (!follower.isBusy()&&launchSystem.update()) {
                     follower.setMaxPower(0.8);
-                    follower.followPath(alignTop);
+                    follower.followPath(pickupBottom);
+                    configuration.intakeMotor.setPower(0.8);
                     launchSystem.fullStop();
                     setPathState(5);
                 }
             case 5:
                 if (!follower.isBusy()) {
-                    follower.followPath(pickupTop);
-//                    motorConfig.intakeMotor.setPower(0.8);
-                    follower.setMaxPower(0.4);
-                    setPathState(6);
+                    follower.followPath(score2);
+                    configuration.intakeMotor.setPower(0);
+                    follower.setMaxPower(0);
+                    setPathState(-6);
                 }
             case 6:
                 if (!follower.isBusy()) {
-                    follower.followPath(score2);
-//                   motorConfig.intakeMotor.setPower(0);
-                    follower.setMaxPower(0); // change
-                    setPathState(7);
-                }
-            case 7:
-                if (!follower.isBusy()) {
                     follower.followPath(bottomLineup);
-//                    motorConfig.intakeMotor.setPower(0.8);  motorconfig guhhh
+                    configuration.intakeMotor.setPower(0.8);
                     setPathState(-1);
                 }
         }

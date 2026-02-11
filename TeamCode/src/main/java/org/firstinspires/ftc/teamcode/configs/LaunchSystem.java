@@ -45,10 +45,9 @@ public class LaunchSystem {
         this.turret = config.turretMotor;
         this.stopper = config.stopper;
 
-        turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        lm1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        lm2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        lm1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        lm2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     public void updateTurret(Pose robotPose) {
@@ -88,7 +87,7 @@ public class LaunchSystem {
         turretTimer.reset();
 
         integralSum = Range.clip(integralSum + (error * dt), -0.5, 0.5);
-        double derivative = (error - lastError) / dt;
+        double derivative = (lastError-error) / dt;
         lastError = error;
 
         double power = (error * turretP) + (integralSum * turretI) + (derivative * turretD);
@@ -119,7 +118,7 @@ public class LaunchSystem {
     // --- Flywheel Logic ---
     public boolean update() {
         if (!isLaunching) return true;
-        if (getVelocity() >= (currentTargetVelocity - 50)) {
+        if (getVelocity() >= (currentTargetVelocity)) {
             if(resetTimer){ launchTimer.reset(); resetTimer = false; }
             stopper.setPosition(passBall);
             im.setPower(1);

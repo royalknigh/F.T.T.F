@@ -37,8 +37,14 @@ public class Tele extends OpMode {
     public void init() {
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(new Pose(8, 7, Math.toRadians(180)));
+        follower.update();
         config = new Configuration(hardwareMap);
         launchSystem = new LaunchSystem(config);
+    }
+
+    @Override
+    public void start(){
+        follower.startTeleOpDrive();
     }
 
     @Override
