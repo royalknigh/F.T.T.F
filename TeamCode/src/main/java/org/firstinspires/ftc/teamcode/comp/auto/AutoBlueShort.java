@@ -22,15 +22,15 @@ public class AutoBlueShort extends OpMode {
     private int pathState = 0;
 //    private final Pose startPose = new Pose(56, 8, Math.toRadians(90));
 //    public final Pose blueGoalPose = new Pose(12, 136);
-    private final Pose startPose = new Pose(27, 117, Math.toRadians(140));
-    private final Pose scorePose = new Pose(60, 85, Math.toRadians(140));
+    private final Pose startPose = new Pose(39, 134, Math.toRadians(140));
+    private final Pose scorePose = new Pose(48, 85, Math.toRadians(140));
     private final Pose fisrtLinePose = new Pose(48, 80, Math.toRadians(180));
-    private final Pose pickup1Pose = new Pose(20, 80, Math.toRadians(180));
+    private final Pose pickup1Pose = new Pose(21, 80, Math.toRadians(180));
     private final Pose secondLinePose = new Pose(48, 58, Math.toRadians(180));
-    private final Pose pickup2Pose = new Pose(10, 58, Math.toRadians(180));
+    private final Pose pickup2Pose = new Pose(13, 58, Math.toRadians(180));
     private final Pose openGatePose = new Pose(17, 65, Math.toRadians(180));
     private final Pose thirdLinePose = new Pose(48, 34, Math.toRadians(180));
-    private final Pose pickup3Pose = new Pose(10, 34, Math.toRadians(180));
+    private final Pose pickup3Pose = new Pose(13, 34, Math.toRadians(180));
 
     private Configuration configuration;
 
@@ -42,6 +42,7 @@ public class AutoBlueShort extends OpMode {
         scorePreload = follower.pathBuilder()
                 .addPath(new BezierLine(startPose, scorePose))
                 .setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading())
+                .addParametricCallback(0, ()-> launchSystem.start(1800))
                 .build();
 
         alignRow1 = follower.pathBuilder().addPath(new BezierLine(scorePose, fisrtLinePose))
@@ -54,6 +55,7 @@ public class AutoBlueShort extends OpMode {
 
         score1 = follower.pathBuilder().addPath(new BezierLine(pickup1Pose, scorePose))
                 .setLinearHeadingInterpolation(pickup1Pose.getHeading(), scorePose.getHeading())
+                .addParametricCallback(0.7, () -> launchSystem.start(1800))
                 .build();
 
         alignRow2 = follower.pathBuilder().addPath(new BezierLine(scorePose, secondLinePose))
@@ -70,6 +72,7 @@ public class AutoBlueShort extends OpMode {
 
         score2 = follower.pathBuilder().addPath(new BezierLine(openGatePose, scorePose))
                 .setLinearHeadingInterpolation(openGatePose.getHeading(), scorePose.getHeading())
+                .addParametricCallback(0.8, () -> launchSystem.start(1800))
                 .build();
 
         alignRow3 = follower.pathBuilder().addPath(new BezierLine(scorePose, thirdLinePose))
@@ -82,6 +85,7 @@ public class AutoBlueShort extends OpMode {
 
         score3 = follower.pathBuilder().addPath(new BezierLine(pickup3Pose, scorePose))
                 .setLinearHeadingInterpolation(pickup3Pose.getHeading(), scorePose.getHeading())
+                .addParametricCallback(0.8, () -> launchSystem.start(1800))
                 .build();
 
         park = follower.pathBuilder()
@@ -95,11 +99,12 @@ public class AutoBlueShort extends OpMode {
             case 0:
                 if(!follower.isBusy()) {
                     follower.followPath(scorePreload);
+                    follower.setMaxPower(0.8);
                     setPathState(1);
                 }
                 break;
             case 1:
-                if(!follower.isBusy()) {
+                if(!follower.isBusy() && launchSystem.update()) {
                     follower.followPath(alignRow1);
                     setPathState(2);
                 }
@@ -119,7 +124,7 @@ public class AutoBlueShort extends OpMode {
                 }
                 break;
             case 4:
-                if(!follower.isBusy()) {
+                if(!follower.isBusy() && launchSystem.update()) {
                     follower.followPath(alignRow2);
                     setPathState(5);
                 }
@@ -145,7 +150,7 @@ public class AutoBlueShort extends OpMode {
                 }
                 break;
             case 8:
-                if(!follower.isBusy()) {
+                if(!follower.isBusy() && launchSystem.update()) {
                     follower.followPath(alignRow3);
                     setPathState(9);
                 }
@@ -165,7 +170,7 @@ public class AutoBlueShort extends OpMode {
                 }
                 break;
             case 11:
-                if(!follower.isBusy()) {
+                if(!follower.isBusy() && launchSystem.update()) {
                     follower.followPath(park);
                     setPathState(-1);
                 }

@@ -9,27 +9,30 @@ import com.pedropathing.geometry.Pose;
 
 public class LaunchSystem {
     private final DcMotorEx lm1, lm2, im, turret;
-    private final Servo stopper;
+    private final Servo stopper, marco;
     private ElapsedTime launchTimer = new ElapsedTime();
     private ElapsedTime turretTimer = new ElapsedTime();
 
     public static double currentTargetVelocity, idleVelocity = 900;
     public double holdBall = 0.56, passBall = 0.95;
 
-    // --- PID Constants ---
-    public static double turretP = 0.02;
-    public static double turretI = 0.0;
-    public static double turretD = 0.0005;
+    // --- PID Constants for 145 TPR turret ---
+    public static double turretP = 0.01;
+    public static double turretI = 0.001;
+    public static double turretD = 0.00001;
     private double lastError = 0;
     private double integralSum = 0;
 
-    public double P = 30;
+    private final double kS = 0.07; // static friction compensation
+
+    public double P = 20;
     public double F = 13.5;
 
-    // --- Gearing Logic (537.6 TPR Motor | 190/45 Ratio) ---
-    private final double TICKS_PER_DEGREE = (537.6 * (190.0 / 45.0)) / 360.0;
+    // --- Gearing Logic (145 TPR Motor | 190/45 Ratio) ---
+    private final double TICKS_PER_DEGREE = (145.0 * (190.0 / 45.0)) / 360.0;
 
-    public int turretOffset = 0;
+    public double turretOffsetDeg = 0;   // offset in degrees
+
     private boolean trackingEnabled = false;
     private boolean isResetting = false;
     private boolean isLaunching = false;
@@ -45,6 +48,7 @@ public class LaunchSystem {
         this.im = config.intakeMotor;
         this.turret = config.turretMotor;
         this.stopper = config.stopper;
+        this.marco = config.marco;
 
         lm1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         lm2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -54,6 +58,7 @@ public class LaunchSystem {
         // Turret init
         turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        turret.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);  // prevents drift when idle
 
         lm1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         lm2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -67,53 +72,65 @@ public class LaunchSystem {
     }
 
     public void updateTurret(Pose robotPose) {
-        double targetLocalDeg = 0;
 
+        double currentDeg = getCurrentDeg();
+        double targetDeg;
+        boolean activeControl = trackingEnabled || isResetting;
+
+        // --- Determine target ---
         if (isResetting) {
-            targetLocalDeg = 0;
-            if (Math.abs(getCurrentDeg()) < 1.0) isResetting = false;
+            targetDeg = 0;
+            if (Math.abs(currentDeg) < 1.0) {
+                isResetting = false;
+            }
         } else if (trackingEnabled) {
-            // 1. Get Global Angle to Goal (Field Space)
             double dx = goalPose.getX() - robotPose.getX();
             double dy = goalPose.getY() - robotPose.getY();
-            double angleToGoalDeg = Math.toDegrees(Math.atan2(dy, dx));
-
-            // 2. Get Robot Heading in Degrees
-            double robotHeadingDeg = Math.toDegrees(robotPose.getHeading());
-
-            // 3. Calculation: Target = GoalAngle - RobotHeading
-            // NOTE: If the turret turns WITH the robot instead of AGAINST it,
-            // change this to: targetLocalDeg = (robotHeadingDeg - angleToGoalDeg);
-            targetLocalDeg = (angleToGoalDeg - robotHeadingDeg);
+            double fieldAngle = Math.toDegrees(Math.atan2(dy, dx));
+            double robotHeading = Math.toDegrees(robotPose.getHeading());
+            targetDeg = normalizeAngle(fieldAngle - robotHeading + turretOffsetDeg);
+            targetDeg = Range.clip(targetDeg, -100, 100); // hard limits
         } else {
-            turret.setPower(0);
-            return;
+            // HOLD current position when idle
+            targetDeg = currentDeg;
         }
 
-        targetLocalDeg += (turretOffset / TICKS_PER_DEGREE);
+        // --- PID calculation ---
+        double error = normalizeAngle(targetDeg - currentDeg);
 
-        double currentLocalDeg = getCurrentDeg();
-        double error = targetLocalDeg - currentLocalDeg;
-
-        // Wrap error for shortest path
-        while (error > 180) error -= 360;
-        while (error < -180) error += 360;
-
+        // Timing
         double dt = turretTimer.seconds();
         if (dt <= 0) dt = 0.001;
         turretTimer.reset();
 
-        integralSum = Range.clip(integralSum + (error * dt), -0.5, 0.5);
+        // Integral accumulation only when actively controlling
+        if (activeControl) {
+            integralSum += error * dt;
+        }
+
         double derivative = (error - lastError) / dt;
         lastError = error;
 
         double power = (error * turretP) + (integralSum * turretI) + (derivative * turretD);
 
-        // Soft Limits
-        if (currentLocalDeg > 160 && power > 0) power = 0;
-        if (currentLocalDeg < -160 && power < 0) power = 0;
+        // --- Static friction compensation ---
+        if (Math.abs(error) > 1.0) {
+            power += Math.signum(error) * kS;
+        }
 
-        turret.setPower(Range.clip(power, -1.0, 1.0));
+        // --- Stop jitter near target ---
+        if (Math.abs(error) < 0.5) {
+            power = 0;
+        }
+
+        // --- Apply power with limits ---
+        turret.setPower(Range.clip(power, -0.8, 0.8));
+    }
+
+    private double normalizeAngle(double angle) {
+        while (angle > 180) angle -= 360;
+        while (angle < -180) angle += 360;
+        return angle;
     }
 
     public double getTargetDeg(Pose robotPose) {
@@ -121,10 +138,12 @@ public class LaunchSystem {
         double dy = goalPose.getY() - robotPose.getY();
         double angleToGoalDeg = Math.toDegrees(Math.atan2(dy, dx));
         double robotHeadingDeg = Math.toDegrees(robotPose.getHeading());
-        return (angleToGoalDeg - robotHeadingDeg) + (turretOffset / TICKS_PER_DEGREE);
+        return (angleToGoalDeg - robotHeadingDeg) + turretOffsetDeg;
     }
 
-    public double getCurrentDeg() { return turret.getCurrentPosition() / TICKS_PER_DEGREE; }
+    public double getCurrentDeg() {
+        return turret.getCurrentPosition() / TICKS_PER_DEGREE;
+    }
 
     public void resetTurretEncoder() {
         turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -143,8 +162,11 @@ public class LaunchSystem {
         if (getVelocity() >= (currentTargetVelocity)) {
             if(resetTimer){ launchTimer.reset(); resetTimer = false; }
             stopper.setPosition(passBall);
+
+            if(launchTimer.milliseconds()>300)
+                marco.setPosition(marco.getPosition()-0.05);
             im.setPower(1);
-            if (launchTimer.milliseconds() > 1000) {
+            if (launchTimer.milliseconds() > 500) {
                 isLaunching = false;
                 return true;
             }
@@ -176,5 +198,17 @@ public class LaunchSystem {
         double dx = goalPose.getX() - robotPose.getX();
         double dy = goalPose.getY() - robotPose.getY();
         return Math.hypot(dx, dy);
+    }
+    public void adjustOffset(double deltaDeg) {
+        turretOffsetDeg += deltaDeg;
+        turretOffsetDeg = Range.clip(turretOffsetDeg, -90, 90);
+    }
+
+    public double getOffsetDeg() {
+        return turretOffsetDeg;
+    }
+
+    public boolean isLaunching(){
+        return isLaunching;
     }
 }
