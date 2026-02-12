@@ -48,15 +48,15 @@ public class Constants {
 
     public static ThreeWheelConstants localizerConstants = new ThreeWheelConstants()
             .forwardTicksToInches(.002)//.001981480234
-            .strafeTicksToInches(.002) //.00197860454
+            .strafeTicksToInches(-.002) //.00197860454
             .turnTicksToInches(.002) //0.002116752641
-            .leftPodY(0)
-            .rightPodY(-3.1496)
-            .strafePodX(-7.08)
+            .leftPodY(2.907)
+            .rightPodY(-2.907)
+            .strafePodX(-5.4582)
             .leftEncoder_HardwareMapName("fr")
             .rightEncoder_HardwareMapName("fl")
             .strafeEncoder_HardwareMapName("im")
-            .leftEncoderDirection(Encoder.FORWARD)
+            .leftEncoderDirection(Encoder.REVERSE)
             .rightEncoderDirection(Encoder.REVERSE)
             .strafeEncoderDirection(Encoder.REVERSE);
 }

@@ -1,12 +1,13 @@
 package org.firstinspires.ftc.teamcode.configs;
 
+import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import com.pedropathing.geometry.Pose;
-
+@Configurable
 public class LaunchSystem {
     private final DcMotorEx lm1, lm2, im, turret;
     private final Servo stopper, marco;
@@ -16,17 +17,23 @@ public class LaunchSystem {
     public static double currentTargetVelocity, idleVelocity = 900;
     public double holdBall = 0.56, passBall = 0.95;
 
+    // --- Heading drift correction ---
+    private double headingBiasDeg = 0;
+    private double lastHeadingDeg = 0;
+    private ElapsedTime headingTimer = new ElapsedTime();
+
+
     // --- PID Constants for 145 TPR turret ---
-    public static double turretP = 0.01;
-    public static double turretI = 0.001;
+    public static double turretP = 0.015;
+    public static double turretI = 0;
     public static double turretD = 0.00001;
     private double lastError = 0;
     private double integralSum = 0;
 
     private final double kS = 0.07; // static friction compensation
 
-    public double P = 20;
-    public double F = 13.5;
+    public double P = 30;
+    public double F = 15;
 
     // --- Gearing Logic (145 TPR Motor | 190/45 Ratio) ---
     private final double TICKS_PER_DEGREE = (145.0 * (190.0 / 45.0)) / 360.0;
@@ -78,12 +85,7 @@ public class LaunchSystem {
         boolean activeControl = trackingEnabled || isResetting;
 
         // --- Determine target ---
-        if (isResetting) {
-            targetDeg = 0;
-            if (Math.abs(currentDeg) < 1.0) {
-                isResetting = false;
-            }
-        } else if (trackingEnabled) {
+        if (trackingEnabled) {
             double dx = goalPose.getX() - robotPose.getX();
             double dy = goalPose.getY() - robotPose.getY();
             double fieldAngle = Math.toDegrees(Math.atan2(dy, dx));
@@ -124,7 +126,7 @@ public class LaunchSystem {
         }
 
         // --- Apply power with limits ---
-        turret.setPower(Range.clip(power, -0.8, 0.8));
+        turret.setPower(Range.clip(power, -0.7, 0.7));
     }
 
     private double normalizeAngle(double angle) {
@@ -145,12 +147,6 @@ public class LaunchSystem {
         return turret.getCurrentPosition() / TICKS_PER_DEGREE;
     }
 
-    public void resetTurretEncoder() {
-        turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        lastError = 0;
-        integralSum = 0;
-    }
 
     public boolean isTracking() { return trackingEnabled; }
     public void toggleTracking() { trackingEnabled = !trackingEnabled; isResetting = false; }
@@ -163,11 +159,10 @@ public class LaunchSystem {
             if(resetTimer){ launchTimer.reset(); resetTimer = false; }
             stopper.setPosition(passBall);
 
-            if(launchTimer.milliseconds()>300)
-                marco.setPosition(marco.getPosition()-0.05);
             im.setPower(1);
             if (launchTimer.milliseconds() > 500) {
                 isLaunching = false;
+                stopper.setPosition(holdBall);
                 return true;
             }
         }
@@ -201,7 +196,6 @@ public class LaunchSystem {
     }
     public void adjustOffset(double deltaDeg) {
         turretOffsetDeg += deltaDeg;
-        turretOffsetDeg = Range.clip(turretOffsetDeg, -90, 90);
     }
 
     public double getOffsetDeg() {
