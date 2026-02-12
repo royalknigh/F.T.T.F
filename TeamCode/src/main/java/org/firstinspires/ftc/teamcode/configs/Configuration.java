@@ -7,6 +7,8 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+
 public class Configuration {
 
     public static DcMotorEx frontLeftMotor, backLeftMotor, frontRightMotor,
@@ -29,6 +31,8 @@ public class Configuration {
         marco = hardwareMap.get(Servo.class, "marco");
 
         turretMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        intakeMotor.setCurrentAlert(0.9, CurrentUnit.AMPS);
 
 
         frontLeftMotor.setDirection(DcMotorEx.Direction.REVERSE);

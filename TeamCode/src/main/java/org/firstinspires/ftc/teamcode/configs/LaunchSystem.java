@@ -22,21 +22,24 @@ public class LaunchSystem {
     private double lastHeadingDeg = 0;
     private ElapsedTime headingTimer = new ElapsedTime();
 
+    public static double m1 = 0.00015;
+    private double  m2 = 1-m1;
+
 
     // --- PID Constants for 145 TPR turret ---
-    public static double turretP = 0.015;
-    public static double turretI = 0;
-    public static double turretD = 0.00001;
+    public static double turretP = 0.02;
+    public static double turretI = 0.01;
+    public static double turretD = 0.00003;
     private double lastError = 0;
     private double integralSum = 0;
 
     private final double kS = 0.07; // static friction compensation
 
-    public double P = 30;
+    public double P = 20;
     public double F = 15;
 
-    // --- Gearing Logic (145 TPR Motor | 190/45 Ratio) ---
-    private final double TICKS_PER_DEGREE = (145.0 * (190.0 / 45.0)) / 360.0;
+    // --- Gearing Logic (384.5 TPR Motor | 190/45 Ratio) ---
+    private final double TICKS_PER_DEGREE = (384.5 * (190.0 / 45.0)) / 360.0;           // 145.1 for 1150 rpm
 
     public double turretOffsetDeg = 0;   // offset in degrees
 
@@ -79,6 +82,7 @@ public class LaunchSystem {
     }
 
     public void updateTurret(Pose robotPose) {
+        m2=1-m1;
 
         double currentDeg = getCurrentDeg();
         double targetDeg;
@@ -89,8 +93,28 @@ public class LaunchSystem {
             double dx = goalPose.getX() - robotPose.getX();
             double dy = goalPose.getY() - robotPose.getY();
             double fieldAngle = Math.toDegrees(Math.atan2(dy, dx));
-            double robotHeading = Math.toDegrees(robotPose.getHeading());
+
+// --- Raw heading ---
+            double rawHeading = Math.toDegrees(robotPose.getHeading());
+
+// --- Compute heading rate ---
+            double dtHeading = headingTimer.seconds();
+            if (dtHeading <= 0) dtHeading = 0.001;
+            headingTimer.reset();
+
+            double headingRate = (rawHeading - lastHeadingDeg) / dtHeading;
+            lastHeadingDeg = rawHeading;
+
+// --- If robot is not rotating, slowly correct drift ---
+            if (Math.abs(headingRate) < 5) { // deg/sec threshold
+                headingBiasDeg = headingBiasDeg * m2 + rawHeading * m1;
+            }
+
+// --- Corrected heading ---
+            double robotHeading = rawHeading - headingBiasDeg;
+
             targetDeg = normalizeAngle(fieldAngle - robotHeading + turretOffsetDeg);
+
             targetDeg = Range.clip(targetDeg, -100, 100); // hard limits
         } else {
             // HOLD current position when idle
@@ -204,5 +228,10 @@ public class LaunchSystem {
 
     public boolean isLaunching(){
         return isLaunching;
+    }
+
+    public void manualZeroTurret() {
+        turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 }

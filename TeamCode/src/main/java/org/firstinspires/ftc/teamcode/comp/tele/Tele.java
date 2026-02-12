@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.configs.Configuration;
 import org.firstinspires.ftc.teamcode.configs.LaunchSystem;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
@@ -67,7 +68,10 @@ public class Tele extends OpMode {
 
 
 
-        if(gamepad1.rightBumperWasPressed())    follower.setPose(new Pose(30, 131, Math.toRadians(143)));
+        if(gamepad1.rightBumperWasPressed()) {
+            follower.setPose(new Pose(25, 124, Math.toRadians(143)));
+            launchSystem.manualZeroTurret();
+        }
 
         // --- Hood & Velocity Controls ---
         angleCalculator(launchSystem.returnDistance(follower.getPose()));
@@ -79,6 +83,9 @@ public class Tele extends OpMode {
     public void stateMachine() {
         if (gamepad1.aWasPressed()) launchSystem.toggleTracking();
         if (gamepad1.xWasPressed()) launchSystem.startReset();
+
+//        if(config.intakeMotor.isOverCurrent())
+//            gamepad1.rumbleBlips(3);
 
         switch (state) {
             case PIKCUP:
@@ -119,6 +126,8 @@ public class Tele extends OpMode {
         telemetry.addData("--- FLYWHEEL ---", "");
         telemetry.addData("servo: ", angle);
         telemetry.addData("Velocity", "%.0f / %.0f", launchSystem.getVelocity(), speed);
+
+        telemetry.addData("current: ", config.intakeMotor.getCurrent(CurrentUnit.AMPS));
         telemetry.update();
     }
 
