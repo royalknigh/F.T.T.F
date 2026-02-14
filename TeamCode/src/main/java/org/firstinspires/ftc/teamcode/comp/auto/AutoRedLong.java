@@ -78,7 +78,7 @@ public class AutoRedLong extends OpMode {
                 setPathState(1);
                 break;
             case 1:
-                if (!follower.isBusy()&&launchSystem.update()) {
+                if (!follower.isBusy()&&launchSystem.update(launchSystem.returnDistance(follower.getPose()))) {
                     follower.setMaxPower(0.8);
                     follower.followPath(alignRow);
                     launchSystem.fullStop();
@@ -99,12 +99,12 @@ public class AutoRedLong extends OpMode {
                     setPathState(4);
                 }
             case 4:
-                if (!follower.isBusy()&&launchSystem.update()) {
+                if (!follower.isBusy()&&launchSystem.update(launchSystem.returnDistance(follower.getPose()))) {
                     follower.setMaxPower(0.8);
                     follower.followPath(pickupBottom);
                     configuration.intakeMotor.setPower(0.8);
                     launchSystem.fullStop();
-                    setPathState(5);
+                    setPathState(-5);
                 }
             case 5:
                 if (!follower.isBusy()) {
@@ -132,7 +132,7 @@ public class AutoRedLong extends OpMode {
         pathTimer = new Timer();
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(startPose);
-        launchSystem = new LaunchSystem(new Configuration(hardwareMap));
+        launchSystem = new LaunchSystem(new Configuration(hardwareMap), LaunchSystem.redGoalPose);
 
         buildPaths();
     }

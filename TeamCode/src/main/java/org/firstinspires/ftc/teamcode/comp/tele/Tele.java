@@ -29,16 +29,18 @@ public class Tele extends OpMode {
     public static Pose startPose;
     public enum State { PIKCUP, LAUNCH }
     public State state = State.PIKCUP;
-    public double angle = 0.5, speed = 1500;
+    public static double angle = 0.5;
+    public static double speed = 1500;
     public boolean idle = true;
-
+    public static Servo marco;
     @Override
     public void init() {
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(new Pose(8, 7, Math.toRadians(180)));
         follower.update();
         config = new Configuration(hardwareMap);
-        launchSystem = new LaunchSystem(config);
+        launchSystem = new LaunchSystem(config, LaunchSystem.redGoalPose);
+        this.marco = config.marco;
     }
 
     @Override
@@ -58,24 +60,24 @@ public class Tele extends OpMode {
         // --- Nudge Controls (D-Pad Left/Right) ---
 
         if (gamepad1.dpadUpWasPressed()) {
-            launchSystem.adjustOffset(15);
+            launchSystem.adjustOffset(7);
         }
 
         if (gamepad1.dpadDownWasPressed()) {
-            launchSystem.adjustOffset(-15);
+            launchSystem.adjustOffset(-7);
         }
 
 
 
 
         if(gamepad1.rightBumperWasPressed()) {
-            follower.setPose(new Pose(25, 124, Math.toRadians(143)));
+            follower.setPose(new Pose(124.5, 117, Math.toRadians(38)));
             launchSystem.manualZeroTurret();
         }
 
         // --- Hood & Velocity Controls ---
-        angleCalculator(launchSystem.returnDistance(follower.getPose()));
         speedCalculator(launchSystem.returnDistance(follower.getPose()));
+        marco.setPosition(angleCalculator(launchSystem.returnDistance(follower.getPose())));
 
         displayData();
     }
@@ -99,7 +101,7 @@ public class Tele extends OpMode {
                 }
                 break;
             case LAUNCH:
-                if (launchSystem.update()) {
+                if (launchSystem.update(launchSystem.returnDistance(follower.getPose()))) {
                     state = State.PIKCUP;
                 }
                 break;
@@ -131,21 +133,24 @@ public class Tele extends OpMode {
         telemetry.update();
     }
 
-    public void angleCalculator(double x){
-//        if(gamepad1.dpadUpWasPressed()) angle += 0.05;
-//        if(gamepad1.dpadDownWasPressed()) angle -= 0.05;
-        angle = -0.0000487309*x*x +0.0144011*x-0.24869;
+    public static double angleCalculator(double x){
+//        if(gamepad1.dpadUpWasPressed()) angle += 0.03;
+//        if(gamepad1.dpadDownWasPressed()) angle -= 0.03;
+        angle = -0.0000347794*x*x+0.00953371*x-0.209821;
         angle = Range.clip(angle, 0.15, 0.85);
-        config.marco.setPosition(angle);
+        return angle;
     }
 
-    public void speedCalculator(double x){
+    public static void speedCalculator(double x){
 //        if (gamepad1.dpadRightWasPressed()) speed += 50;
 //        if (gamepad1.dpadLeftWasPressed())  speed -= 50;
-        speed = 6.85244*x+1311.98909;
+        speed = 7.97132*x+1066.07612;
         speed = Range.clip(speed, 1000, 2500);
 
     }
 
 
+    public Pose getPose(){
+        return follower.getPose();
+    }
 }

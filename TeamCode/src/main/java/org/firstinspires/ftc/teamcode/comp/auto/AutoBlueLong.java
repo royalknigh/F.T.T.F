@@ -19,6 +19,7 @@ public class AutoBlueLong extends OpMode {
     private Follower follower;
     private Timer pathTimer;
     private int pathState = 0;
+    public final Pose blueGoalPose = new Pose(0, 141);
     private final Pose startPose = new Pose(55, 9, Math.toRadians(90));
     private final Pose scorePose = new Pose(60, 13, Math.toRadians(130));
     private final Pose lineup = new Pose(43, 35, Math.toRadians(180));
@@ -77,7 +78,7 @@ public class AutoBlueLong extends OpMode {
                 setPathState(1);
                 break;
             case 1:
-                if (!follower.isBusy()&&launchSystem.update()) {
+                if (!follower.isBusy()&&launchSystem.update(launchSystem.returnDistance(follower.getPose()))) {
                     follower.setMaxPower(0.8);
                     follower.followPath(alignRow);
                     launchSystem.fullStop();
@@ -98,7 +99,7 @@ public class AutoBlueLong extends OpMode {
                     setPathState(4);
                 }
             case 4:
-                if (!follower.isBusy()&&launchSystem.update()) {
+                if (!follower.isBusy()&&launchSystem.update(launchSystem.returnDistance(follower.getPose()))) {
                     follower.setMaxPower(0.8);
                     follower.followPath(pickupBottom);
                     configuration.intakeMotor.setPower(0.8);
@@ -131,7 +132,7 @@ public class AutoBlueLong extends OpMode {
         pathTimer = new Timer();
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(startPose);
-        launchSystem = new LaunchSystem(new Configuration(hardwareMap));
+        launchSystem = new LaunchSystem(new Configuration(hardwareMap), LaunchSystem.blueGoalPose);
 
         buildPaths();
     }

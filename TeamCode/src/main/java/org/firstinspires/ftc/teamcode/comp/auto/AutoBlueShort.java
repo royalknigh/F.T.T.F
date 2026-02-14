@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.comp.auto;
 
+import static org.firstinspires.ftc.teamcode.configs.LaunchSystem.blueGoalPose;
+
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
@@ -8,6 +10,7 @@ import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.configs.Configuration;
 import org.firstinspires.ftc.teamcode.configs.LaunchSystem;
@@ -19,160 +22,219 @@ public class AutoBlueShort extends OpMode {
 
     private Follower follower;
     private Timer pathTimer;
+    private ElapsedTime getOpenGateTimer = new ElapsedTime();
+    private Timer openGateTimer;
     private int pathState = 0;
-//    private final Pose startPose = new Pose(56, 8, Math.toRadians(90));
-//    public final Pose blueGoalPose = new Pose(12, 136);
-    private final Pose startPose = new Pose(39, 134, Math.toRadians(140));
+    private boolean hasStartedLaunch = false;
+
+    // --- Poses ---
+    private final Pose startPose = new Pose(36, 137, Math.toRadians(180));
     private final Pose scorePose = new Pose(48, 85, Math.toRadians(140));
-    private final Pose fisrtLinePose = new Pose(48, 80, Math.toRadians(180));
-    private final Pose pickup1Pose = new Pose(21, 80, Math.toRadians(180));
-    private final Pose secondLinePose = new Pose(48, 58, Math.toRadians(180));
-    private final Pose pickup2Pose = new Pose(13, 58, Math.toRadians(180));
-    private final Pose openGatePose = new Pose(17, 65, Math.toRadians(180));
-    private final Pose thirdLinePose = new Pose(48, 34, Math.toRadians(180));
-    private final Pose pickup3Pose = new Pose(13, 34, Math.toRadians(180));
+
+    private final Pose fisrtLinePose = new Pose(48, 84, Math.toRadians(180));
+    private final Pose pickup1Pose = new Pose(17, 84, Math.toRadians(180));
+
+    private final Pose secondLinePose = new Pose(48, 62, Math.toRadians(180));
+    private final Pose pickup2Pose = new Pose(10, 62, Math.toRadians(180));
+    private final Pose openGatePose = new Pose(15.5, 69, Math.toRadians(180));
+
+    private final Pose thirdLinePose = new Pose(48, 38, Math.toRadians(180));
+    private final Pose pickup3Pose = new Pose(13, 38, Math.toRadians(180));
+
+    private final Pose human = new Pose(13, 28, Math.toRadians(220));
 
     private Configuration configuration;
-
     private LaunchSystem launchSystem;
+
     private PathChain scorePreload, alignRow1, pickupRow1, score1, alignRow2, pickupRow2,
-            openGate, score2, alignRow3, pickupRow3, score3, park;
+            openGate, score2, alignRow3, pickupRow3, score3, park, humanPickup;
 
-    public void buildPaths() {
-        scorePreload = follower.pathBuilder()
-                .addPath(new BezierLine(startPose, scorePose))
-                .setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading())
-                .addParametricCallback(0, ()-> launchSystem.start(1800))
-                .build();
+    @Override
+    public void init() {
+        pathTimer = new Timer();
+        follower = Constants.createFollower(hardwareMap);
+        follower.setStartingPose(startPose);
 
-        alignRow1 = follower.pathBuilder().addPath(new BezierLine(scorePose, fisrtLinePose))
-                .setLinearHeadingInterpolation(scorePose.getHeading(), fisrtLinePose.getHeading())
-                .build();
+        configuration = new Configuration(hardwareMap);
+        launchSystem = new LaunchSystem(new Configuration(hardwareMap), blueGoalPose);
+        buildPaths();
+    }
 
-        pickupRow1 = follower.pathBuilder().addPath(new BezierLine(fisrtLinePose, pickup1Pose))
-                .setLinearHeadingInterpolation(fisrtLinePose.getHeading(), pickup1Pose.getHeading())
-                .build();
+    @Override
+    public void start() {
+         // Ensure turret is aiming
+        launchSystem.idle();
+        setPathState(0);
+    }
 
-        score1 = follower.pathBuilder().addPath(new BezierLine(pickup1Pose, scorePose))
-                .setLinearHeadingInterpolation(pickup1Pose.getHeading(), scorePose.getHeading())
-                .addParametricCallback(0.7, () -> launchSystem.start(1800))
-                .build();
+    @Override
+    public void loop() {
+        follower.update();
 
-        alignRow2 = follower.pathBuilder().addPath(new BezierLine(scorePose, secondLinePose))
-                .setLinearHeadingInterpolation(scorePose.getHeading(), secondLinePose.getHeading())
-                .build();
+        // Target calculations
+        launchSystem.updateTurret(follower.getPose());
+        double currentDist = launchSystem.returnDistance(follower.getPose());
+        Tele.speedCalculator(currentDist);
+        configuration.marco.setPosition(Tele.angleCalculator(currentDist));
 
-        pickupRow2 = follower.pathBuilder().addPath(new BezierLine(secondLinePose, pickup2Pose))
-                .setLinearHeadingInterpolation(secondLinePose.getHeading(), pickup2Pose.getHeading())
-                .build();
+        autonomousPathUpdate();
 
-        openGate = follower.pathBuilder()
-                .addPath(new BezierCurve(pickup2Pose, new Pose(37, 62), openGatePose))
-                .setLinearHeadingInterpolation(pickup2Pose.getHeading(), openGatePose.getHeading()).build();
-
-        score2 = follower.pathBuilder().addPath(new BezierLine(openGatePose, scorePose))
-                .setLinearHeadingInterpolation(openGatePose.getHeading(), scorePose.getHeading())
-                .addParametricCallback(0.8, () -> launchSystem.start(1800))
-                .build();
-
-        alignRow3 = follower.pathBuilder().addPath(new BezierLine(scorePose, thirdLinePose))
-                .setLinearHeadingInterpolation(scorePose.getHeading(), thirdLinePose.getHeading())
-                .build();
-
-        pickupRow3 = follower.pathBuilder().addPath(new BezierLine(thirdLinePose, pickup3Pose))
-                .setLinearHeadingInterpolation(thirdLinePose.getHeading(), pickup3Pose.getHeading())
-                .build();
-
-        score3 = follower.pathBuilder().addPath(new BezierLine(pickup3Pose, scorePose))
-                .setLinearHeadingInterpolation(pickup3Pose.getHeading(), scorePose.getHeading())
-                .addParametricCallback(0.8, () -> launchSystem.start(1800))
-                .build();
-
-        park = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose, secondLinePose))
-                .setConstantHeadingInterpolation(scorePose.getHeading())
-                .build();
+        telemetry.addData("Path State", pathState);
+        telemetry.addData("Velo", "%.0f / %.0f", launchSystem.getVelocity(), Tele.speed);
+        telemetry.addData("Target Pose", "48, 85");
+        telemetry.update();
     }
 
     public void autonomousPathUpdate() {
         switch (pathState) {
-            case 0:
+            case 0: // Preload Path
                 if(!follower.isBusy()) {
                     follower.followPath(scorePreload);
-                    follower.setMaxPower(0.8);
+                    follower.setMaxPower(1);
+                    hasStartedLaunch = false;
                     setPathState(1);
                 }
                 break;
-            case 1:
-                if(!follower.isBusy() && launchSystem.update()) {
-                    follower.followPath(alignRow1);
-                    setPathState(2);
+
+            case 1: // Preload Launch
+                if(!follower.isBusy()) {
+                    if(!hasStartedLaunch) {
+                        launchSystem.start(Tele.speed);
+                        hasStartedLaunch = true;
+                        launchSystem.toggleTracking();
+                    }
+                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()))) {
+                        follower.followPath(alignRow1);
+                        hasStartedLaunch = false;
+                        launchSystem.toggleTracking();
+                        setPathState(2);
+                    }
                 }
                 break;
-            case 2:
+
+            case 2: // Align 1 -> Pickup 1
                 if(!follower.isBusy()) {
                     follower.followPath(pickupRow1);
                     configuration.intakeMotor.setPower(0.8);
                     setPathState(3);
                 }
                 break;
-            case 3:
+
+            case 3: // Pickup 1 -> Score 1
                 if(!follower.isBusy()) {
                     follower.followPath(score1);
-                    configuration.intakeMotor.setPower(0);
+                    hasStartedLaunch = false;
                     setPathState(4);
                 }
                 break;
-            case 4:
-                if(!follower.isBusy() && launchSystem.update()) {
-                    follower.followPath(alignRow2);
-                    setPathState(5);
+
+            case 4: // Score 1 Launch
+                if(!follower.isBusy()) {
+                    if(!launchSystem.isLaunching() && !hasStartedLaunch) {
+                        launchSystem.toggleTracking();
+                        launchSystem.start(Tele.speed);
+                        hasStartedLaunch = true;
+                    }
+                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()))) {
+                        follower.followPath(alignRow2);
+                        hasStartedLaunch = false;
+                        launchSystem.toggleTracking();
+                        setPathState(5);
+                    }
                 }
                 break;
-            case 5:
+
+            case 5: // Align 2 -> Pickup 2
                 if(!follower.isBusy()) {
                     follower.followPath(pickupRow2);
-                    configuration.intakeMotor.setPower(0.8);
+                    configuration.intakeMotor.setPower(1);
                     setPathState(6);
                 }
                 break;
-            case 6:
+
+            case 6: // Pickup 2 -> Gate
                 if(!follower.isBusy()) {
+
                     follower.followPath(openGate);
-                    configuration.intakeMotor.setPower(0);
+                    follower.setMaxPower(0.8);
                     setPathState(7);
+                    getOpenGateTimer.reset();
                 }
                 break;
-            case 7:
-                if(!follower.isBusy()) {
+
+            case 7: // Gate -> Score 2
+                if(!follower.isBusy() && getOpenGateTimer.seconds()>3) {
+
                     follower.followPath(score2);
+                    follower.setMaxPower(1);
+                    hasStartedLaunch = false;
+
                     setPathState(8);
                 }
                 break;
-            case 8:
-                if(!follower.isBusy() && launchSystem.update()) {
-                    follower.followPath(alignRow3);
-                    setPathState(9);
+
+            case 8: // Score 2 Launch
+                if(!follower.isBusy()) {
+                    if(!launchSystem.isLaunching() && !hasStartedLaunch) {
+                        launchSystem.start(Tele.speed);
+                        launchSystem.toggleTracking();
+                        hasStartedLaunch = true;
+                    }
+                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()))) {
+                        follower.followPath(alignRow3);
+                        hasStartedLaunch = false;
+                        launchSystem.toggleTracking();
+                        setPathState(9);
+                    }
                 }
                 break;
-            case 9:
+
+            case 9: // Align 3 -> Pickup 3
                 if(!follower.isBusy()) {
                     follower.followPath(pickupRow3);
-                    configuration.intakeMotor.setPower(0.8);
+                    configuration.intakeMotor.setPower(1);
                     setPathState(10);
                 }
                 break;
-            case 10:
+
+            case 10: // Pickup 3 -> Score 3
                 if(!follower.isBusy()) {
-                    follower.followPath(score3);
                     configuration.intakeMotor.setPower(0);
+                    follower.followPath(score3);
+
+                    hasStartedLaunch = false;
                     setPathState(11);
                 }
                 break;
-            case 11:
-                if(!follower.isBusy() && launchSystem.update()) {
-                    follower.followPath(park);
-                    setPathState(-1);
+
+            case 11: // Score 3 Launch
+                if(!follower.isBusy()) {
+                    if(!launchSystem.isLaunching() && !hasStartedLaunch) {
+                        launchSystem.start(Tele.speed); // Fixed high speed for last shot
+                        launchSystem.toggleTracking();
+                        hasStartedLaunch = true;
+                    }
+                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()))) {
+                        follower.followPath(humanPickup);
+                        launchSystem.toggleTracking();
+                        hasStartedLaunch = false;
+                        setPathState(12);
+                    }
+                }
+                break;
+            case 12: // Score 3 Launch
+                if(!follower.isBusy()) {
+                    if(!launchSystem.isLaunching() && !hasStartedLaunch) {
+                        launchSystem.start(Tele.speed); // Fixed high speed for last shot
+                        launchSystem.toggleTracking();
+                        hasStartedLaunch = true;
+                    }
+                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()))) {
+                        follower.followPath(park);
+                        launchSystem.toggleTracking();
+                        hasStartedLaunch = false;
+                        setPathState(-1);
+                    }
                 }
                 break;
         }
@@ -183,38 +245,93 @@ public class AutoBlueShort extends OpMode {
         pathTimer.resetTimer();
     }
 
-    @Override
-    public void init() {
-        pathTimer = new Timer();
-        follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(startPose);
-        launchSystem = new LaunchSystem(new Configuration(hardwareMap));
+    public void buildPaths() {
+        scorePreload = follower.pathBuilder()
+                .addPath(new BezierLine(startPose, scorePose))
+                .setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading())
+                .addParametricCallback(0.2, () ->launchSystem.adjustOffset(5))
+                .build();
 
-        buildPaths();
-    }
+        alignRow1 = follower.pathBuilder()
+                .addPath(new BezierLine(scorePose, fisrtLinePose))
+                .setLinearHeadingInterpolation(scorePose.getHeading(), fisrtLinePose.getHeading())
+                .build();
 
-    @Override
-    public void init_loop() {
-    }
+        pickupRow1 = follower.pathBuilder()
+                .addPath(new BezierLine(fisrtLinePose, pickup1Pose))
+                .setLinearHeadingInterpolation(fisrtLinePose.getHeading(), pickup1Pose.getHeading())
+                .build();
 
-    @Override
-    public void start() {
-        setPathState(0);
-    }
+        score1 = follower.pathBuilder()
+                .addPath(new BezierLine(pickup1Pose, scorePose))
+                .setLinearHeadingInterpolation(pickup1Pose.getHeading(), scorePose.getHeading())
+                .addParametricCallback(0.6, () -> configuration.intakeMotor.setPower(0))
+                .build();
 
-    @Override
-    public void loop() {
-        follower.update();
-        launchSystem.updateTurret(follower.getPose());
-        autonomousPathUpdate();
-        telemetry.addData("Path State", pathState);
-        telemetry.update();
+        alignRow2 = follower.pathBuilder()
+                .addPath(new BezierLine(scorePose, secondLinePose))
+                .setLinearHeadingInterpolation(scorePose.getHeading(), secondLinePose.getHeading())
+                .build();
+
+        pickupRow2 = follower.pathBuilder()
+                .addPath(new BezierLine(secondLinePose, pickup2Pose))
+                .setLinearHeadingInterpolation(secondLinePose.getHeading(), pickup2Pose.getHeading())
+                .build();
+
+        openGate = follower.pathBuilder()
+                .addPath(new BezierCurve(pickup2Pose, new Pose(37, 62), openGatePose))
+                .setLinearHeadingInterpolation(pickup2Pose.getHeading(), openGatePose.getHeading())
+                .addParametricCallback(0.6, () -> configuration.intakeMotor.setPower(0.7))
+                .addParametricCallback(0.7, () -> follower.setMaxPower(0.6))
+                .build();
+
+        score2 = follower.pathBuilder()
+                .addPath(new BezierLine(openGatePose, scorePose))
+                .setLinearHeadingInterpolation(openGatePose.getHeading(), scorePose.getHeading())
+                .addParametricCallback(0.3, () -> configuration.intakeMotor.setPower(0))
+                .build();
+
+        alignRow3 = follower.pathBuilder()
+                .addPath(new BezierLine(scorePose, thirdLinePose))
+                .setLinearHeadingInterpolation(scorePose.getHeading(), thirdLinePose.getHeading())
+                .build();
+
+        pickupRow3 = follower.pathBuilder()
+                .addPath(new BezierLine(thirdLinePose, pickup3Pose))
+                .setLinearHeadingInterpolation(thirdLinePose.getHeading(), pickup3Pose.getHeading())
+                .build();
+
+        score3 = follower.pathBuilder()
+                .addPath(new BezierLine(pickup3Pose, scorePose))
+                .setLinearHeadingInterpolation(pickup3Pose.getHeading(), scorePose.getHeading())
+                .addParametricCallback(0, () -> configuration.intakeMotor.setPower(0.5))
+                .addParametricCallback(0.6, () -> configuration.intakeMotor.setPower(0))
+                .build();
+
+
+        humanPickup =  follower.pathBuilder()
+                .addPath(new BezierLine(scorePose, human))
+                .setConstantHeadingInterpolation(human.getHeading())
+                .addParametricCallback(0.5, () -> configuration.intakeMotor.setPower(1))
+                .addParametricCallback(0.8, () -> follower.setMaxPower(0.7))
+
+                .addPath(new BezierLine(human, scorePose))
+                .setLinearHeadingInterpolation(human.getHeading(), scorePose.getHeading())
+                .addParametricCallback(0.3, () -> configuration.intakeMotor.setPower(0))
+                .addParametricCallback(0, () -> follower.setMaxPower(1))
+                .build();
+
+        park = follower.pathBuilder()
+                .addPath(new BezierLine(scorePose, secondLinePose))
+                .setConstantHeadingInterpolation(scorePose.getHeading())
+                .build();
+
+
     }
 
     @Override
     public void stop(){
         Tele.startPose = follower.getPose();
+        launchSystem.fullStop();
     }
-
-//    public void
 }

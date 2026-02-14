@@ -7,6 +7,9 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import com.pedropathing.geometry.Pose;
+
+import org.firstinspires.ftc.teamcode.comp.tele.Tele;
+
 @Configurable
 public class LaunchSystem {
     private final DcMotorEx lm1, lm2, im, turret;
@@ -15,14 +18,14 @@ public class LaunchSystem {
     private ElapsedTime turretTimer = new ElapsedTime();
 
     public static double currentTargetVelocity, idleVelocity = 900;
-    public double holdBall = 0.56, passBall = 0.95;
+    public double holdBall = 0.38, passBall = 0.7;
 
     // --- Heading drift correction ---
     private double headingBiasDeg = 0;
     private double lastHeadingDeg = 0;
     private ElapsedTime headingTimer = new ElapsedTime();
 
-    public static double m1 = 0.00015;
+    public static double m1 = 0;
     private double  m2 = 1-m1;
 
 
@@ -48,17 +51,18 @@ public class LaunchSystem {
     private boolean isLaunching = false;
     private boolean resetTimer = true;
 
-    public final Pose blueGoalPose = new Pose(12, 136);
-    public final Pose redGoalPose = new Pose(130, 136);
+    public static final Pose blueGoalPose = new Pose(0, 141);
+    public static final Pose redGoalPose = new Pose(142, 141);
     private Pose goalPose = blueGoalPose;
 
-    public LaunchSystem(Configuration config) {
+    public LaunchSystem(Configuration config, Pose pose) {
         this.lm1 = config.launchMotor1;
         this.lm2 = config.launchMotor2;
         this.im = config.intakeMotor;
         this.turret = config.turretMotor;
         this.stopper = config.stopper;
         this.marco = config.marco;
+        this.goalPose = pose;
 
         lm1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         lm2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -150,12 +154,11 @@ public class LaunchSystem {
         }
 
         // --- Apply power with limits ---
-        turret.setPower(Range.clip(power, -0.7, 0.7));
+        turret.setPower(Range.clip(power, -1, 1));
     }
 
     private double normalizeAngle(double angle) {
-        while (angle > 180) angle -= 360;
-        while (angle < -180) angle += 360;
+        angle = Range.clip(angle, -140, 140);
         return angle;
     }
 
@@ -176,17 +179,32 @@ public class LaunchSystem {
     public void toggleTracking() { trackingEnabled = !trackingEnabled; isResetting = false; }
     public void startReset() { isResetting = true; trackingEnabled = false; }
 
-    public boolean update() {
+    public boolean update(double distance) {
         updatePIDF();
-        if (!isLaunching) return true;
-        if (getVelocity() >= (currentTargetVelocity)) {
-            if(resetTimer){ launchTimer.reset(); resetTimer = false; }
-            stopper.setPosition(passBall);
 
-            im.setPower(1);
+        if (!isLaunching) return true;
+
+        double threshold = currentTargetVelocity;
+
+        if (getVelocity() >= threshold) {
+            if(resetTimer) {
+                launchTimer.reset();
+                resetTimer = false;
+            }
+            stopper.setPosition(passBall);
+            if(distance <90)
+                im.setPower(1);
+            else
+                im.setPower(0.8);
+
             if (launchTimer.milliseconds() > 500) {
                 isLaunching = false;
+                resetTimer = true;
                 stopper.setPosition(holdBall);
+
+                im.setPower(0);
+                idle();
+
                 return true;
             }
         }
