@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import com.pedropathing.geometry.Pose;
 
-import org.firstinspires.ftc.teamcode.comp.tele.Tele;
+import org.firstinspires.ftc.teamcode.comp.tele.TeleBlue;
 
 @Configurable
 public class LaunchSystem {
@@ -39,7 +39,7 @@ public class LaunchSystem {
     private final double kS = 0.07; // static friction compensation
 
     public double P = 20;
-    public double F = 15;
+    public double F = 14;
 
     // --- Gearing Logic (384.5 TPR Motor | 190/45 Ratio) ---
     private final double TICKS_PER_DEGREE = (384.5 * (190.0 / 45.0)) / 360.0;           // 145.1 for 1150 rpm
@@ -119,7 +119,7 @@ public class LaunchSystem {
 
             targetDeg = normalizeAngle(fieldAngle - robotHeading + turretOffsetDeg);
 
-            targetDeg = Range.clip(targetDeg, -100, 100); // hard limits
+            targetDeg = Range.clip(targetDeg, -140, 140); // hard limits
         } else {
             // HOLD current position when idle
             targetDeg = currentDeg;

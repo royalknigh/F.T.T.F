@@ -22,7 +22,7 @@ import java.util.function.Supplier;
 
 @Configurable
 @TeleOp
-public class Tele extends OpMode {
+public class TeleRed extends OpMode {
     private Follower follower;
     private LaunchSystem launchSystem;
     private Configuration config;
@@ -39,7 +39,7 @@ public class Tele extends OpMode {
         follower.setStartingPose(new Pose(8, 7, Math.toRadians(180)));
         follower.update();
         config = new Configuration(hardwareMap);
-        launchSystem = new LaunchSystem(config, LaunchSystem.blueGoalPose);
+        launchSystem = new LaunchSystem(config, LaunchSystem.redGoalPose);
         this.marco = config.marco;
     }
 
@@ -71,7 +71,7 @@ public class Tele extends OpMode {
 
 
         if(gamepad1.rightBumperWasPressed()) {
-            follower.setPose(new Pose(25, 125, Math.toRadians(143)));
+            follower.setPose(new Pose(124, 117, Math.toRadians(38)));
             launchSystem.manualZeroTurret();
         }
 

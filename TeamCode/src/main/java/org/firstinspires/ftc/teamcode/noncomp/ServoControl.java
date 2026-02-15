@@ -16,7 +16,7 @@ public class ServoControl extends LinearOpMode {
     @Override
     public void runOpMode() {
 
-        servo = hardwareMap.get(Servo.class, "stopper");
+        servo = hardwareMap.get(Servo.class, "marco");
         motor = hardwareMap.get(DcMotor.class, "im");
 
         waitForStart();
