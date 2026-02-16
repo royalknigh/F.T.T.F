@@ -59,13 +59,20 @@ public class Tele extends OpMode {
 
         // --- Nudge Controls (D-Pad Left/Right) ---
 
-        if (gamepad1.dpadUpWasPressed()) {
-            launchSystem.adjustOffset(7);
-        }
+//        if (gamepad1.dpadUpWasPressed()) {
+//            launchSystem.adjustOffset(7);
+//        }
+//
+//        if (gamepad1.dpadDownWasPressed()) {
+//            launchSystem.adjustOffset(-7);
+//        }
 
-        if (gamepad1.dpadDownWasPressed()) {
-            launchSystem.adjustOffset(-7);
-        }
+        if (gamepad1.dpadUpWasPressed()) speed += 50;      // Fine-tune speed
+        if (gamepad1.dpadDownWasPressed()) speed -= 50;
+        if (gamepad1.dpadRightWasPressed()) angle += 0.02; // Fine-tune hood angle
+        if (gamepad1.dpadLeftWasPressed()) angle -= 0.02;
+
+        if (config.intakeMotor.isOverCurrent()) gamepad1.rumbleBlips(3);
 
 
 
@@ -137,7 +144,7 @@ public class Tele extends OpMode {
     public static double angleCalculator(double x){
 //        if(gamepad1.dpadUpWasPressed()) angle += 0.03;
 //        if(gamepad1.dpadDownWasPressed()) angle -= 0.03;
-        angle = -0.0000347794*x*x+0.00953371*x-0.209821;
+//        angle = -0.0000347794*x*x+0.00953371*x-0.209821+0.06;
         angle = Range.clip(angle, 0.15, 0.85);
         return angle;
     }
@@ -145,7 +152,7 @@ public class Tele extends OpMode {
     public static void speedCalculator(double x){
 //        if (gamepad1.dpadRightWasPressed()) speed += 50;
 //        if (gamepad1.dpadLeftWasPressed())  speed -= 50;
-        speed = 7.97132*x+1066.07612;
+//        speed = 7.97132*x+1066.07612+75;
         speed = Range.clip(speed, 1000, 2500);
 
     }

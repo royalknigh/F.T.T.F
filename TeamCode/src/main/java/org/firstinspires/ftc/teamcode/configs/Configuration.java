@@ -32,7 +32,7 @@ public class Configuration {
 
         turretMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        intakeMotor.setCurrentAlert(0.9, CurrentUnit.AMPS);
+        intakeMotor.setCurrentAlert(5.8, CurrentUnit.AMPS);
 
 
         frontLeftMotor.setDirection(DcMotorEx.Direction.REVERSE);
@@ -48,6 +48,11 @@ public class Configuration {
         launchMotor1.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         launchMotor2.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         intakeMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+
+        // Change the Front Left motor to RUN_WITHOUT_ENCODER
+// so the Hub doesn't try to manage its speed using the turret encoder's data.
+        frontLeftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
         //wont reset turret to see if i can keep pos between auto and teleop
 
         launchMotor1.setDirection(DcMotorEx.Direction.FORWARD);
