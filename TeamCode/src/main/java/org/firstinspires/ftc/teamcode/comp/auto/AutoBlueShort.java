@@ -317,7 +317,7 @@ public class AutoBlueShort extends OpMode {
                 .setConstantHeadingInterpolation(human.getHeading())
                 .addParametricCallback(0.5, () -> configuration.intakeMotor.setPower(1))
                 .addParametricCallback(0.8, () -> follower.setMaxPower(0.5))
-                .setTimeoutConstraint(500)
+//                .setTimeoutConstraint(500)
 
                 .addPath(new BezierLine(human, scorePose))
                 .setLinearHeadingInterpolation(human.getHeading(), scorePose.getHeading())

@@ -67,9 +67,6 @@ public class TeleRed extends OpMode {
             launchSystem.adjustOffset(-7);
         }
 
-
-
-
         if(gamepad1.rightBumperWasPressed()) {
             follower.setPose(new Pose(125, 117, Math.toRadians(38)));
             launchSystem.manualZeroTurret();
@@ -127,8 +124,6 @@ public class TeleRed extends OpMode {
         telemetry.addData("y: ", follower.getPose().getY()) ;
 
         telemetry.addData("distance", launchSystem.returnDistance(follower.getPose()));
-
-
 
         telemetry.addData("--- FLYWHEEL ---", "");
         telemetry.addData("servo: ", angle);

@@ -36,7 +36,6 @@ public class Constants {
                 .mecanumDrivetrain(driveConstants)
                 .build();
     }
-
     public static MecanumConstants driveConstants = new MecanumConstants()
             .maxPower(1)
             .rightFrontMotorName("fr")
@@ -49,7 +48,6 @@ public class Constants {
             .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
             .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
             .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD);
-
     public static PinpointConstants localizerConstants = new PinpointConstants()
             .forwardPodY(-2.736220)
             .strafePodX(3.699615)
