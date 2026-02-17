@@ -32,7 +32,7 @@ public class Configuration {
 
         turretMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        intakeMotor.setCurrentAlert(5.8, CurrentUnit.AMPS);
+        intakeMotor.setCurrentAlert(6, CurrentUnit.AMPS);
 
 
         frontLeftMotor.setDirection(DcMotorEx.Direction.REVERSE);

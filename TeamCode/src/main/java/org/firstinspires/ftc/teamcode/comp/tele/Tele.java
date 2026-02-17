@@ -59,13 +59,13 @@ public class Tele extends OpMode {
 
         // --- Nudge Controls (D-Pad Left/Right) ---
 
-//        if (gamepad1.dpadUpWasPressed()) {
-//            launchSystem.adjustOffset(7);
-//        }
-//
-//        if (gamepad1.dpadDownWasPressed()) {
-//            launchSystem.adjustOffset(-7);
-//        }
+        if (gamepad1.bWasPressed()) {
+            launchSystem.adjustOffset(7);
+        }
+
+        if (gamepad1.xWasPressed()) {
+            launchSystem.adjustOffset(-7);
+        }
 
         if (gamepad1.dpadUpWasPressed()) speed += 50;      // Fine-tune speed
         if (gamepad1.dpadDownWasPressed()) speed -= 50;
@@ -78,7 +78,7 @@ public class Tele extends OpMode {
 
 
         if(gamepad1.rightBumperWasPressed()) {
-            follower.setPose(new Pose(25, 125, Math.toRadians(143)));
+            follower.setPose(new Pose(20, 118, Math.toRadians(143)));
             launchSystem.manualZeroTurret();
         }
 
@@ -91,7 +91,7 @@ public class Tele extends OpMode {
 
     public void stateMachine() {
         if (gamepad1.aWasPressed()) launchSystem.toggleTracking();
-        if (gamepad1.xWasPressed()) launchSystem.startReset();
+//        if (gamepad1.xWasPressed()) launchSystem.startReset();
 
 //        if(config.intakeMotor.isOverCurrent())
 //            gamepad1.rumbleBlips(3);
@@ -144,7 +144,7 @@ public class Tele extends OpMode {
     public static double angleCalculator(double x){
 //        if(gamepad1.dpadUpWasPressed()) angle += 0.03;
 //        if(gamepad1.dpadDownWasPressed()) angle -= 0.03;
-//        angle = -0.0000347794*x*x+0.00953371*x-0.209821+0.06;
+        angle = 0.0052523*x-0.0160238;
         angle = Range.clip(angle, 0.15, 0.85);
         return angle;
     }
@@ -152,7 +152,7 @@ public class Tele extends OpMode {
     public static void speedCalculator(double x){
 //        if (gamepad1.dpadRightWasPressed()) speed += 50;
 //        if (gamepad1.dpadLeftWasPressed())  speed -= 50;
-//        speed = 7.97132*x+1066.07612+75;
+        speed = 6.88374*x+1229.15448 ;
         speed = Range.clip(speed, 1000, 2500);
 
     }

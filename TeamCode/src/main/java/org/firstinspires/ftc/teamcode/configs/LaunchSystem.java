@@ -25,15 +25,15 @@ public class LaunchSystem {
     public double holdBall = 0.38, passBall = 0.7;
 
     // --- PID Constants ---
-    public static double turretP = 0.02;
+    public static double turretP = 0.015;
     public static double turretI = 0.01;
     public static double turretD = 0.00003;
     private double lastError = 0;
     private double integralSum = 0;
     private final double kS = 0.07;
 
-    public double P = 20;
-    public double F = 14;
+    public static double P = 20;
+    public static double F = 13.5;
 
     // --- Gearing Logic (REV Through-Bore 8192 TPR | 190/30 Ratio) ---
     private final double TICKS_PER_DEGREE = (8192.0 * (190.0 / 30.0)) / 360.0;
@@ -44,8 +44,8 @@ public class LaunchSystem {
     private boolean isLaunching = false;
     private boolean resetTimer = true;
 
-    public static final Pose blueGoalPose = new Pose(0, 144);
-    public static final Pose redGoalPose = new Pose(144, 144);
+    public static final Pose blueGoalPose = new Pose(0, 141);
+    public static final Pose redGoalPose = new Pose(144, 142);
     private Pose goalPose = blueGoalPose;
 
     public LaunchSystem(Configuration config, Pose pose) {
@@ -91,27 +91,42 @@ public class LaunchSystem {
             double fieldAngle = Math.toDegrees(Math.atan2(dy, dx));
             double robotHeading = Math.toDegrees(robotPose.getHeading());
 
-            targetDeg = betterNormalize(fieldAngle - robotHeading);
-            targetDeg = Range.clip(targetDeg, -140, 140);
+            // 1. Get the raw relative angle
+            double rawTarget = betterNormalize(fieldAngle - robotHeading);
+
+            // 2. INTELLIGENT CLAMPING
+            // Instead of just clipping, we check if the snap is happening
+            if (rawTarget > 140 || rawTarget < -140) {
+                // If the goal is in the "dead zone" behind the robot,
+                // stay at the limit we are currently closest to.
+                targetDeg = (currentDeg > 0) ? 140 : -140;
+            } else {
+                targetDeg = rawTarget;
+            }
         } else {
             targetDeg = isResetting ? 0 : currentDeg;
         }
 
+        // 3. Calculate error with the standard 180 normalization
         double error = betterNormalize(targetDeg - currentDeg);
+
+        // PID Math
         double dt = turretTimer.seconds();
         if (dt <= 0) dt = 0.001;
         turretTimer.reset();
 
         if (trackingEnabled || isResetting) integralSum += error * dt;
-
         double derivative = (error - lastError) / dt;
         lastError = error;
 
         double power = (error * turretP) + (integralSum * turretI) + (derivative * turretD);
+
+        // Static friction compensation
         if (Math.abs(error) > 1.0) power += Math.signum(error) * kS;
+
+        // Deadzone to prevent jitter at the limits
         if (Math.abs(error) < 0.5) power = 0;
 
-        // Apply power to the actual motor
         turretMotor.setPower(Range.clip(power, -1, 1));
     }
 
@@ -142,8 +157,10 @@ public class LaunchSystem {
         if (getVelocity() >= currentTargetVelocity) {
             if(resetTimer) { launchTimer.reset(); resetTimer = false; }
             stopper.setPosition(passBall);
-            im.setPower(distance < 90 ? 1 : 0.8);
-            if (launchTimer.milliseconds() > 500) {
+            if(distance<=90) im.setPower(0.85);
+            if(distance> 90 && distance<110) im.setPower(0.8);
+            if(distance >110) im.setPower(0.7);
+            if (launchTimer.milliseconds() > 600) {
                 isLaunching = false;
                 resetTimer = true;
                 stopper.setPosition(holdBall);

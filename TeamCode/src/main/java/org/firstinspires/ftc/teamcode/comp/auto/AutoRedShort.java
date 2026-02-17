@@ -27,16 +27,16 @@ public class AutoRedShort extends OpMode {
 
     // --- Poses ---
     private final Pose startPose = new Pose(108, 137, Math.toRadians(0));
-    private final Pose scorePose = new Pose(89, 95, Math.toRadians(0));
+    private final Pose scorePose = new Pose(92, 85, Math.toRadians(0));
     private final Pose fisrtLinePose = new Pose(96, 85, Math.toRadians(0));
     private final Pose pickup1Pose = new Pose(130, 85, Math.toRadians(0));
     private final Pose secondLinePose = new Pose(96, 62, Math.toRadians(0));
-    private final Pose pickup2Pose = new Pose(131, 62, Math.toRadians(0));
-    private final Pose openGatePose = new Pose(128, 65, Math.toRadians(0)); //gate
+    private final Pose pickup2Pose = new Pose(132, 62, Math.toRadians(0));
+    private final Pose openGatePose = new Pose(130, 72, Math.toRadians(0)); //gate
     private final Pose thirdLinePose = new Pose(96, 36, Math.toRadians(0));
-    private final Pose pickup3Pose = new Pose(131, 36, Math.toRadians(0));
+    private final Pose pickup3Pose = new Pose(132, 36, Math.toRadians(0));
 
-    private final Pose human = new Pose(136, 11, Math.toRadians(-70));
+    private final Pose human = new Pose(136, 16, Math.toRadians(-70));
 
     private Configuration configuration;
     private LaunchSystem launchSystem;
@@ -80,6 +80,7 @@ public class AutoRedShort extends OpMode {
         telemetry.addData("Target Pose", "48, 85");
         telemetry.update();
     }
+
 
     public void autonomousPathUpdate() {
         switch (pathState) {
@@ -159,7 +160,7 @@ public class AutoRedShort extends OpMode {
                 break;
 
             case 7: // Gate -> Score 2
-                if(!follower.isBusy() && getOpenGateTimer.seconds()>3) {
+                if(!follower.isBusy() && getOpenGateTimer.seconds()>2.7) {
 
                     follower.followPath(score2);
                     follower.setMaxPower(1);
@@ -195,7 +196,6 @@ public class AutoRedShort extends OpMode {
 
             case 10: // Pickup 3 -> Score 3
                 if(!follower.isBusy()) {
-                    configuration.intakeMotor.setPower(0);
                     follower.followPath(score3);
 
                     hasStartedLaunch = false;
@@ -245,11 +245,12 @@ public class AutoRedShort extends OpMode {
         scorePreload = follower.pathBuilder()
                 .addPath(new BezierLine(startPose, scorePose))
                 .setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading())
-//                .addParametricCallback(0.2, () ->launchSystem.adjustOffset(5))
+//                .addParametricCallback(0.3, () -> launchSystem.adjustOffset(-5))
                 .build();
 
         alignRow1 = follower.pathBuilder()
                 .addPath(new BezierLine(scorePose, fisrtLinePose))
+                .setNoDeceleration()
                 .setLinearHeadingInterpolation(scorePose.getHeading(), fisrtLinePose.getHeading())
                 .build();
 
@@ -262,6 +263,7 @@ public class AutoRedShort extends OpMode {
                 .addPath(new BezierLine(pickup1Pose, scorePose))
                 .setLinearHeadingInterpolation(pickup1Pose.getHeading(), scorePose.getHeading())
                 .addParametricCallback(0.6, () -> configuration.intakeMotor.setPower(0))
+                .setTValueConstraint(0.9)
                 .build();
 
         alignRow2 = follower.pathBuilder()
@@ -275,9 +277,9 @@ public class AutoRedShort extends OpMode {
                 .build();
 
         openGate = follower.pathBuilder()
-                .addPath(new BezierCurve(pickup2Pose, new Pose(120, 60), openGatePose))
+                .addPath(new BezierCurve(pickup2Pose, new Pose(110, 60), openGatePose))
                 .setLinearHeadingInterpolation(pickup2Pose.getHeading(), openGatePose.getHeading())
-                .addParametricCallback(0.6, () -> configuration.intakeMotor.setPower(0.7))
+                .addParametricCallback(0.5, () -> configuration.intakeMotor.setPower(0.7))
                 .addParametricCallback(0.7, () -> follower.setMaxPower(0.6))
                 .build();
 
@@ -285,6 +287,7 @@ public class AutoRedShort extends OpMode {
                 .addPath(new BezierLine(openGatePose, scorePose))
                 .setLinearHeadingInterpolation(openGatePose.getHeading(), scorePose.getHeading())
                 .addParametricCallback(0.3, () -> configuration.intakeMotor.setPower(0))
+                .setTValueConstraint(0.9)
                 .build();
 
         alignRow3 = follower.pathBuilder()
@@ -300,20 +303,22 @@ public class AutoRedShort extends OpMode {
         score3 = follower.pathBuilder()
                 .addPath(new BezierLine(pickup3Pose, scorePose))
                 .setLinearHeadingInterpolation(pickup3Pose.getHeading(), scorePose.getHeading())
-                .addParametricCallback(0, () -> configuration.intakeMotor.setPower(0.5))
+                .addParametricCallback(0, () -> configuration.intakeMotor.setPower(0.7))
                 .addParametricCallback(0.6, () -> configuration.intakeMotor.setPower(0))
+                .setTValueConstraint(0.9)
                 .build();
 
 
         humanPickup =  follower.pathBuilder()
-                .addPath(new BezierLine(scorePose, human))
+                .addPath(new BezierCurve(scorePose, new Pose(142, 63), human))
                 .setConstantHeadingInterpolation(human.getHeading())
                 .addParametricCallback(0.5, () -> configuration.intakeMotor.setPower(1))
-                .addParametricCallback(0.8, () -> follower.setMaxPower(0.7))
+                .addParametricCallback(0.8, () -> follower.setMaxPower(0.5))
+                .setTimeoutConstraint(500)
 
                 .addPath(new BezierLine(human, scorePose))
                 .setLinearHeadingInterpolation(human.getHeading(), scorePose.getHeading())
-                .addParametricCallback(0.3, () -> configuration.intakeMotor.setPower(0))
+                .addParametricCallback(0.5, () -> configuration.intakeMotor.setPower(0))
                 .addParametricCallback(0, () -> follower.setMaxPower(1))
                 .build();
 
