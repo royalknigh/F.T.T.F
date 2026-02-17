@@ -151,9 +151,30 @@ public class LaunchSystem {
     public void startReset() { isResetting = true; trackingEnabled = false; }
     public boolean isTracking() { return trackingEnabled; }
 
-    public boolean update(double distance) {
+    public void start(double target) {
+//        this.currentTargetVelocity = target;
+        this.isLaunching = true;
+        this.resetTimer = true;
+//        lm1.setVelocity(target);
+//        lm2.setVelocity(target);
+    }
+
+    public void idle() {
+        isLaunching = false;
+        stopper.setPosition(holdBall);
+        im.setPower(0);
+        lm1.setVelocity(idleVelocity);
+        lm2.setVelocity(idleVelocity);
+    }
+
+
+    public boolean update(double distance, double currentDynamicSpeed) {
         updatePIDF();
         if (!isLaunching) return true;
+        lm1.setVelocity(currentDynamicSpeed);
+        lm2.setVelocity(currentDynamicSpeed);
+
+        this.currentTargetVelocity = currentDynamicSpeed;
         if (getVelocity() >= currentTargetVelocity) {
             if(resetTimer) { launchTimer.reset(); resetTimer = false; }
             stopper.setPosition(passBall);
@@ -172,21 +193,6 @@ public class LaunchSystem {
         return false;
     }
 
-    public void start(double target) {
-        this.currentTargetVelocity = target;
-        this.isLaunching = true;
-        this.resetTimer = true;
-        lm1.setVelocity(target);
-        lm2.setVelocity(target);
-    }
-
-    public void idle() {
-        isLaunching = false;
-        stopper.setPosition(holdBall);
-        im.setPower(0);
-        lm1.setVelocity(idleVelocity);
-        lm2.setVelocity(idleVelocity);
-    }
 
     public void fullStop() { isLaunching = false; lm1.setVelocity(0); lm2.setVelocity(0); }
     public double getVelocity() { return (lm1.getVelocity() + lm2.getVelocity()) / 2.0; }

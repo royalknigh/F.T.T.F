@@ -78,7 +78,7 @@ public class AutoBlueLong extends OpMode {
                 setPathState(1);
                 break;
             case 1:
-                if (!follower.isBusy()&&launchSystem.update(launchSystem.returnDistance(follower.getPose()))) {
+                if(!follower.isBusy() && launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
                     follower.setMaxPower(0.8);
                     follower.followPath(alignRow);
                     launchSystem.fullStop();
@@ -99,7 +99,7 @@ public class AutoBlueLong extends OpMode {
                     setPathState(4);
                 }
             case 4:
-                if (!follower.isBusy()&&launchSystem.update(launchSystem.returnDistance(follower.getPose()))) {
+                if(!follower.isBusy() && launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
                     follower.setMaxPower(0.8);
                     follower.followPath(pickupBottom);
                     configuration.intakeMotor.setPower(0.8);

@@ -103,7 +103,7 @@ public class AutoBlueShort extends OpMode {
                         hasStartedLaunch = true;
                         launchSystem.toggleTracking();
                     }
-                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()))) {
+                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
                         follower.followPath(alignRow1);
                         hasStartedLaunch = false;
                         launchSystem.toggleTracking();
@@ -135,7 +135,7 @@ public class AutoBlueShort extends OpMode {
                         launchSystem.start(Tele.speed);
                         hasStartedLaunch = true;
                     }
-                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()))) {
+                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
                         follower.followPath(alignRow2);
                         hasStartedLaunch = false;
                         launchSystem.toggleTracking();
@@ -180,7 +180,7 @@ public class AutoBlueShort extends OpMode {
                         launchSystem.toggleTracking();
                         hasStartedLaunch = true;
                     }
-                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()))) {
+                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
                         follower.followPath(alignRow3);
                         hasStartedLaunch = false;
                         launchSystem.toggleTracking();
@@ -213,7 +213,7 @@ public class AutoBlueShort extends OpMode {
                         launchSystem.toggleTracking();
                         hasStartedLaunch = true;
                     }
-                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()))) {
+                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
                         follower.followPath(humanPickup);
                         launchSystem.toggleTracking();
                         hasStartedLaunch = false;
@@ -228,7 +228,7 @@ public class AutoBlueShort extends OpMode {
                         launchSystem.toggleTracking();
                         hasStartedLaunch = true;
                     }
-                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()))) {
+                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
                         follower.followPath(park);
                         launchSystem.toggleTracking();
                         hasStartedLaunch = false;

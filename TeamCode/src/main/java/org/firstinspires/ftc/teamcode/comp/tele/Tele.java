@@ -74,17 +74,14 @@ public class Tele extends OpMode {
 
         if (config.intakeMotor.isOverCurrent()) gamepad1.rumbleBlips(3);
 
-
-
-
         if(gamepad1.rightBumperWasPressed()) {
             follower.setPose(new Pose(20, 118, Math.toRadians(143)));
             launchSystem.manualZeroTurret();
         }
 
         // --- Hood & Velocity Controls ---
-        speedCalculator(launchSystem.returnDistance(follower.getPose()));
-        marco.setPosition(angleCalculator(launchSystem.returnDistance(follower.getPose())));
+//        speedCalculator(launchSystem.returnDistance(follower.getPose()));
+//        marco.setPosition(angleCalculator(launchSystem.returnDistance(follower.getPose())));
 
         displayData();
     }
@@ -109,7 +106,11 @@ public class Tele extends OpMode {
                 }
                 break;
             case LAUNCH:
-                if (launchSystem.update(launchSystem.returnDistance(follower.getPose()))) {
+                double currentDist = launchSystem.returnDistance(follower.getPose());
+                speedCalculator(currentDist);
+                marco.setPosition(angleCalculator(currentDist));
+
+                if (launchSystem.update(launchSystem.returnDistance(follower.getPose()), speed)) {
                     state = State.PIKCUP;
                 }
                 break;

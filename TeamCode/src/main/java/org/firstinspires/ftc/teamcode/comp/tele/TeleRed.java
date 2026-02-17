@@ -103,8 +103,12 @@ public class TeleRed extends OpMode {
                 }
                 break;
             case LAUNCH:
-                if (launchSystem.update(launchSystem.returnDistance(follower.getPose()))) {
-                    state = State.PIKCUP;
+                double currentDist = launchSystem.returnDistance(follower.getPose());
+                speedCalculator(currentDist);
+                marco.setPosition(angleCalculator(currentDist));
+
+                if (launchSystem.update(launchSystem.returnDistance(follower.getPose()), speed)) {
+                    state = TeleRed.State.PIKCUP;
                 }
                 break;
         }
@@ -136,7 +140,7 @@ public class TeleRed extends OpMode {
     public static double angleCalculator(double x){
 //        if(gamepad1.dpadUpWasPressed()) angle += 0.03;
 //        if(gamepad1.dpadDownWasPressed()) angle -= 0.03;
-        angle = -0.0000347794 * x * x + 0.00953371 * x - 0.209821 +0.05;
+        angle = 0.0052523*x-0.0160238;;
         angle = Range.clip(angle, 0.15, 0.85);
         return angle;
     }
@@ -144,7 +148,7 @@ public class TeleRed extends OpMode {
     public static void speedCalculator(double x){
 //        if (gamepad1.dpadRightWasPressed()) speed += 50;
 //        if (gamepad1.dpadLeftWasPressed())  speed -= 50;
-        speed = 7.97132 * x + 1066.07612+100;
+        speed = 6.88374*x+1229.15448 ;
         speed = Range.clip(speed, 1000, 2500);
 
     }

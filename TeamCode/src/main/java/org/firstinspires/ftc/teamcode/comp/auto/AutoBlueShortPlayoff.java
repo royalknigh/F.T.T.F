@@ -105,7 +105,7 @@ public class AutoBlueShortPlayoff extends OpMode {
                         hasStartedLaunch = true;
                         launchSystem.toggleTracking();
                     }
-                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()))) {
+                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)){
                         follower.followPath(middleRow);
                         hasStartedLaunch = false;
                         launchSystem.toggleTracking();
@@ -120,7 +120,7 @@ public class AutoBlueShortPlayoff extends OpMode {
                         hasStartedLaunch = true;
                         launchSystem.toggleTracking();
                     }
-                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()))) {
+                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)){
                         follower.followPath(openGate);
                         hasStartedLaunch = false;
                         launchSystem.toggleTracking();
@@ -148,7 +148,7 @@ public class AutoBlueShortPlayoff extends OpMode {
                         hasStartedLaunch = true;
                         launchSystem.toggleTracking();
                     }
-                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()))) {
+                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)){
                         follower.followPath(firstRow);
                         hasStartedLaunch = false;
                         launchSystem.toggleTracking();
@@ -163,7 +163,7 @@ public class AutoBlueShortPlayoff extends OpMode {
                         hasStartedLaunch = true;
                         launchSystem.toggleTracking();
                     }
-                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()))) {
+                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)){
                         follower.followPath(openGate);
                         hasStartedLaunch = false;
                         launchSystem.toggleTracking();
@@ -190,7 +190,7 @@ public class AutoBlueShortPlayoff extends OpMode {
                         hasStartedLaunch = true;
                         launchSystem.toggleTracking();
                     }
-                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()))) {
+                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)){
                         follower.followPath(park);
                         hasStartedLaunch = false;
                         launchSystem.toggleTracking();

@@ -86,7 +86,7 @@ public class AutoRedLong extends OpMode {
                         hasStartedLaunch = true;
                         launchSystem.toggleTracking();
                     }
-                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()))) {
+                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
                         follower.followPath(alignRow);
                         hasStartedLaunch = false;
                         launchSystem.toggleTracking();
@@ -118,7 +118,7 @@ public class AutoRedLong extends OpMode {
                         launchSystem.start(Tele.speed);
                         hasStartedLaunch = true;
                     }
-                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()))) {
+                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
                         follower.followPath(pickupBottom);
                         hasStartedLaunch = false;
                         launchSystem.toggleTracking();
@@ -140,7 +140,7 @@ public class AutoRedLong extends OpMode {
                         launchSystem.start(Tele.speed);
                         hasStartedLaunch = true;
                     }
-                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()))) {
+                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
                         follower.followPath(bottomLineup);
                         hasStartedLaunch = false;
                         launchSystem.toggleTracking();
