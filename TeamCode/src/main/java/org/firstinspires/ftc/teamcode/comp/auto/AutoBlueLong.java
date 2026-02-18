@@ -27,6 +27,7 @@ public class AutoBlueLong extends OpMode {
     private final Pose bottomPose = new Pose(12, 11, Math.toRadians(180));
     private final Pose gatePickup = new Pose(12, 11, Math.toRadians(90));
     private LaunchSystem launchSystem;
+    private boolean hasStartedLaunch = false;
     private Configuration configuration;
     private PathChain scorePreload, alignRow, pickupRow, score, pickupBottom, score2, bottomLineup;
     // scorePreload ( startPose - > scorePose ) : 1
@@ -74,16 +75,25 @@ public class AutoBlueLong extends OpMode {
         switch(pathState) {
             case 0:
                 follower.followPath(scorePreload);
-                follower.setMaxPower(0.8);
+                follower.setMaxPower(1);
+                hasStartedLaunch = false;
                 setPathState(1);
                 break;
             case 1:
-                if(!follower.isBusy() && launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
-                    follower.setMaxPower(0.8);
-                    follower.followPath(alignRow);
-                    launchSystem.fullStop();
-                    setPathState(2);
+                if(!follower.isBusy()) {
+                    if(!hasStartedLaunch) {
+                        launchSystem.start(Tele.speed);
+                        hasStartedLaunch = true;
+                        launchSystem.toggleTracking();
+                    }
+                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
+                        follower.followPath(alignRow);
+                        hasStartedLaunch = false;
+                        launchSystem.toggleTracking();
+                        setPathState(2);
+                    }
                 }
+                break;
             case 2:
                 if (!follower.isBusy()) {
                     follower.followPath(pickupRow);
@@ -99,26 +109,48 @@ public class AutoBlueLong extends OpMode {
                     setPathState(4);
                 }
             case 4:
-                if(!follower.isBusy() && launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
-                    follower.setMaxPower(0.8);
-                    follower.followPath(pickupBottom);
-                    configuration.intakeMotor.setPower(0.8);
-                    launchSystem.fullStop();
-                    setPathState(5);
+                if(!follower.isBusy()) {
+                    if(!hasStartedLaunch) {
+                        launchSystem.start(Tele.speed);
+                        hasStartedLaunch = true;
+                        launchSystem.toggleTracking();
+                    }
+                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
+                        follower.followPath(pickupBottom);
+                        hasStartedLaunch = false;
+                        launchSystem.toggleTracking();
+                        setPathState(5);
+                    }
                 }
+                break;
             case 5:
                 if (!follower.isBusy()) {
                     follower.followPath(score2);
                     configuration.intakeMotor.setPower(0);
                     follower.setMaxPower(0);
-                    setPathState(-6);
+                    setPathState(6);
                 }
             case 6:
-                if (!follower.isBusy()) {
-                    follower.followPath(bottomLineup);
-                    configuration.intakeMotor.setPower(0.8);
-                    setPathState(-1);
+                if(!follower.isBusy()) {
+                    if(!hasStartedLaunch) {
+                        launchSystem.start(Tele.speed);
+                        hasStartedLaunch = true;
+                        launchSystem.toggleTracking();
+                    }
+                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
+                        follower.followPath(bottomLineup);
+                        hasStartedLaunch = false;
+                        launchSystem.toggleTracking();
+                        configuration.intakeMotor.setPower(0.8);
+                        setPathState(-1);
+                    }
                 }
+                break;
+//                if (!follower.isBusy()) {
+//                    follower.followPath(bottomLineup);
+//                    configuration.intakeMotor.setPower(0.8);
+//                    setPathState(-1);
+//                }
         }
     }
 

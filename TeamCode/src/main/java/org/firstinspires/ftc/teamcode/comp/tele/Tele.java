@@ -60,11 +60,11 @@ public class Tele extends OpMode {
         // --- Nudge Controls (D-Pad Left/Right) ---
 
         if (gamepad1.bWasPressed()) {
-            launchSystem.adjustOffset(7);
+            launchSystem.adjustOffset(4);
         }
 
         if (gamepad1.xWasPressed()) {
-            launchSystem.adjustOffset(-7);
+            launchSystem.adjustOffset(-4);
         }
 
         if (gamepad1.dpadUpWasPressed()) speed += 50;      // Fine-tune speed
@@ -78,6 +78,10 @@ public class Tele extends OpMode {
             follower.setPose(new Pose(20, 118, Math.toRadians(143)));
             launchSystem.manualZeroTurret();
         }
+
+        double currentDist = launchSystem.returnDistance(follower.getPose());
+        speedCalculator(currentDist);
+        marco.setPosition(angleCalculator(currentDist));
 
         // --- Hood & Velocity Controls ---
 //        speedCalculator(launchSystem.returnDistance(follower.getPose()));
@@ -106,9 +110,7 @@ public class Tele extends OpMode {
                 }
                 break;
             case LAUNCH:
-                double currentDist = launchSystem.returnDistance(follower.getPose());
-                speedCalculator(currentDist);
-                marco.setPosition(angleCalculator(currentDist));
+
 
                 if (launchSystem.update(launchSystem.returnDistance(follower.getPose()), speed)) {
                     state = State.PIKCUP;
@@ -145,8 +147,8 @@ public class Tele extends OpMode {
     public static double angleCalculator(double x){
 //        if(gamepad1.dpadUpWasPressed()) angle += 0.03;
 //        if(gamepad1.dpadDownWasPressed()) angle -= 0.03;
-        angle = 0.0052523*x-0.0160238;
-        angle = Range.clip(angle, 0.15, 0.85);
+        angle = 0.0052523*x-0.0160238 -0.16;
+        angle = Range.clip(angle, 0, 0.85);
         return angle;
     }
 

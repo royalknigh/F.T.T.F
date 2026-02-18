@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.configs;
 
+import static org.firstinspires.ftc.teamcode.comp.tele.TeleRed.speed;
+
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -17,7 +19,7 @@ public class LaunchSystem {
     private ElapsedTime launchTimer = new ElapsedTime();
     private ElapsedTime turretTimer = new ElapsedTime();
 
-    public static double currentTargetVelocity, idleVelocity = 900;
+    public static double currentTargetVelocity, idleVelocity = 1300;
 
     // PERSISTENCE: Saved from Auto.stop()
     public static double lastSavedPosition = 0;
@@ -25,24 +27,25 @@ public class LaunchSystem {
     public double holdBall = 0.38, passBall = 0.7;
 
     // --- PID Constants ---
-    public static double turretP = 0.015;
-    public static double turretI = 0.01;
+    public static double turretP = 0.017;
+    public static double turretI = 0.005;
     public static double turretD = 0.00003;
     private double lastError = 0;
     private double integralSum = 0;
     private final double kS = 0.07;
 
-    public static double P = 20;
-    public static double F = 13.5;
+    public static double P = 30;
+    public static double F = 14.3;
 
     // --- Gearing Logic (REV Through-Bore 8192 TPR | 190/30 Ratio) ---
-    private final double TICKS_PER_DEGREE = (8192.0 * (190.0 / 30.0)) / 360.0;
+    private final double TICKS_PER_DEGREE = (8192.0 * (190.0 / 35.0)) / 360.0;
 
     public double turretOffsetDeg = 0;
     private boolean trackingEnabled = false;
     private boolean isResetting = false;
     private boolean isLaunching = false;
     private boolean resetTimer = true;
+    private boolean go = false;
 
     public static final Pose blueGoalPose = new Pose(0, 141);
     public static final Pose redGoalPose = new Pose(144, 142);
@@ -91,15 +94,15 @@ public class LaunchSystem {
             double fieldAngle = Math.toDegrees(Math.atan2(dy, dx));
             double robotHeading = Math.toDegrees(robotPose.getHeading());
 
-            // 1. Get the raw relative angle
+            // 1. Calculăm unde ar fi coșul în mod ideal (-180 la 180)
             double rawTarget = betterNormalize(fieldAngle - robotHeading);
 
-            // 2. INTELLIGENT CLAMPING
-            // Instead of just clipping, we check if the snap is happening
-            if (rawTarget > 140 || rawTarget < -140) {
-                // If the goal is in the "dead zone" behind the robot,
-                // stay at the limit we are currently closest to.
-                targetDeg = (currentDeg > 0) ? 140 : -140;
+            // 2. LIMITARE STRICTĂ (-100 la 100)
+            // Dacă coșul este în afara range-ului, tureta "îngheață" la marginea cea mai apropiată.
+            if (rawTarget > 100) {
+                targetDeg = 100;
+            } else if (rawTarget < -100) {
+                targetDeg = -100;
             } else {
                 targetDeg = rawTarget;
             }
@@ -107,26 +110,36 @@ public class LaunchSystem {
             targetDeg = isResetting ? 0 : currentDeg;
         }
 
-        // 3. Calculate error with the standard 180 normalization
-        double error = betterNormalize(targetDeg - currentDeg);
+        // 3. CALCULUL ERORII LINIAR (FĂRĂ betterNormalize)
+        // Dacă tureta e la 100 și ținta devine -100, eroarea va fi -200.
+        // Motorul va roti tureta invers pe tot parcursul celor 200 de grade.
+        double error = targetDeg - currentDeg;
 
         // PID Math
         double dt = turretTimer.seconds();
         if (dt <= 0) dt = 0.001;
         turretTimer.reset();
 
-        if (trackingEnabled || isResetting) integralSum += error * dt;
+        if (trackingEnabled || isResetting) {
+            integralSum += error * dt;
+            // Anti-windup pentru a proteja motorul la margini
+            integralSum = Range.clip(integralSum, -20, 20);
+        } else {
+            integralSum = 0;
+        }
+
         double derivative = (error - lastError) / dt;
         lastError = error;
 
         double power = (error * turretP) + (integralSum * turretI) + (derivative * turretD);
 
-        // Static friction compensation
+        // Static friction compensation (kS)
         if (Math.abs(error) > 1.0) power += Math.signum(error) * kS;
 
-        // Deadzone to prevent jitter at the limits
+        // Deadzone pentru stabilitate
         if (Math.abs(error) < 0.5) power = 0;
 
+        // Limităm puterea pentru a nu brusca mecanismul la capete
         turretMotor.setPower(Range.clip(power, -1, 1));
     }
 
@@ -137,7 +150,7 @@ public class LaunchSystem {
     }
 
     public double getCurrentDeg() {
-        return (turretEncoderPort.getCurrentPosition() / TICKS_PER_DEGREE) + turretOffsetDeg;
+        return -(turretEncoderPort.getCurrentPosition() / TICKS_PER_DEGREE) + turretOffsetDeg;
     }
 
     public void manualZeroTurret() {
@@ -163,6 +176,7 @@ public class LaunchSystem {
         isLaunching = false;
         stopper.setPosition(holdBall);
         im.setPower(0);
+        LaunchSystem.idleVelocity = speed-200;
         lm1.setVelocity(idleVelocity);
         lm2.setVelocity(idleVelocity);
     }

@@ -29,7 +29,7 @@ public class AutoBlueShort extends OpMode {
 
     // --- Poses ---
     private final Pose startPose = new Pose(36, 137, Math.toRadians(180));
-    private final Pose scorePose = new Pose(56, 84, Math.toRadians(180));
+    private final Pose scorePose = new Pose(50, 86, Math.toRadians(180));
 
     private final Pose fisrtLinePose = new Pose(48, 84, Math.toRadians(180));
     private final Pose pickup1Pose = new Pose(17, 84, Math.toRadians(180));
@@ -41,7 +41,7 @@ public class AutoBlueShort extends OpMode {
     private final Pose thirdLinePose = new Pose(48, 38, Math.toRadians(180));
     private final Pose pickup3Pose = new Pose(10, 38, Math.toRadians(180));
 
-    private final Pose human = new Pose(6, 10, Math.toRadians(230));
+    private final Pose human = new Pose(5, 10, Math.toRadians(230));
 
     private Configuration configuration;
     private LaunchSystem launchSystem;
@@ -115,7 +115,7 @@ public class AutoBlueShort extends OpMode {
             case 2: // Align 1 -> Pickup 1
                 if(!follower.isBusy()) {
                     follower.followPath(pickupRow1);
-                    configuration.intakeMotor.setPower(0.8);
+                    configuration.intakeMotor.setPower(1);
                     setPathState(3);
                 }
                 break;
@@ -156,14 +156,14 @@ public class AutoBlueShort extends OpMode {
                 if(!follower.isBusy()) {
 
                     follower.followPath(openGate);
-                    follower.setMaxPower(0.8);
+                    follower.setMaxPower(1);
                     setPathState(7);
                     getOpenGateTimer.reset();
                 }
                 break;
 
             case 7: // Gate -> Score 2
-                if(!follower.isBusy() && getOpenGateTimer.seconds()>2.7) {
+                if(!follower.isBusy() && getOpenGateTimer.seconds()>2.3) {
 
                     follower.followPath(score2);
                     follower.setMaxPower(1);
@@ -248,7 +248,7 @@ public class AutoBlueShort extends OpMode {
         scorePreload = follower.pathBuilder()
                 .addPath(new BezierLine(startPose, scorePose))
                 .setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading())
-//                .addParametricCallback(0.3, () -> launchSystem.adjustOffset(-5))
+                .addParametricCallback(0.3, () -> launchSystem.adjustOffset(-2))
                 .build();
 
         alignRow1 = follower.pathBuilder()
@@ -290,6 +290,7 @@ public class AutoBlueShort extends OpMode {
                 .addPath(new BezierLine(openGatePose, scorePose))
                 .setLinearHeadingInterpolation(openGatePose.getHeading(), scorePose.getHeading())
                 .addParametricCallback(0.3, () -> configuration.intakeMotor.setPower(0))
+//                .addParametricCallback(0.3, () -> launchSystem.adjustOffset(-2))
                 .setTValueConstraint(0.9)
                 .build();
 
@@ -321,7 +322,7 @@ public class AutoBlueShort extends OpMode {
 
                 .addPath(new BezierLine(human, scorePose))
                 .setLinearHeadingInterpolation(human.getHeading(), scorePose.getHeading())
-                .addParametricCallback(0.5, () -> configuration.intakeMotor.setPower(0))
+                .addParametricCallback(0.67, () -> configuration.intakeMotor.setPower(0))
                 .addParametricCallback(0, () -> follower.setMaxPower(1))
                 .build();
 

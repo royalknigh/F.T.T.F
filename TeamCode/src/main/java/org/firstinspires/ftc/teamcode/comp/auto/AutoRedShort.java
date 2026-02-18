@@ -36,7 +36,7 @@ public class AutoRedShort extends OpMode {
     private final Pose thirdLinePose = new Pose(96, 36, Math.toRadians(0));
     private final Pose pickup3Pose = new Pose(132, 36, Math.toRadians(0));
 
-    private final Pose human = new Pose(136, 16, Math.toRadians(-70));
+    private final Pose human = new Pose(139, 16, Math.toRadians(-70));
 
     private Configuration configuration;
     private LaunchSystem launchSystem;
@@ -100,7 +100,7 @@ public class AutoRedShort extends OpMode {
                         hasStartedLaunch = true;
                         launchSystem.toggleTracking();
                     }
-                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()))) {
+                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
                         follower.followPath(alignRow1);
                         hasStartedLaunch = false;
                         launchSystem.toggleTracking();
@@ -112,7 +112,7 @@ public class AutoRedShort extends OpMode {
             case 2: // Align 1 -> Pickup 1
                 if(!follower.isBusy()) {
                     follower.followPath(pickupRow1);
-                    configuration.intakeMotor.setPower(0.8);
+                    configuration.intakeMotor.setPower(1);
                     setPathState(3);
                 }
                 break;
@@ -132,7 +132,7 @@ public class AutoRedShort extends OpMode {
                         launchSystem.start(Tele.speed);
                         hasStartedLaunch = true;
                     }
-                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()))) {
+                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
                         follower.followPath(alignRow2);
                         hasStartedLaunch = false;
                         launchSystem.toggleTracking();
@@ -153,7 +153,7 @@ public class AutoRedShort extends OpMode {
                 if(!follower.isBusy()) {
 
                     follower.followPath(openGate);
-                    follower.setMaxPower(0.8);
+                    follower.setMaxPower(1);
                     setPathState(7);
                     getOpenGateTimer.reset();
                 }
@@ -177,7 +177,7 @@ public class AutoRedShort extends OpMode {
                         launchSystem.toggleTracking();
                         hasStartedLaunch = true;
                     }
-                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()))) {
+                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
                         follower.followPath(alignRow3);
                         hasStartedLaunch = false;
                         launchSystem.toggleTracking();
@@ -210,7 +210,7 @@ public class AutoRedShort extends OpMode {
                         launchSystem.toggleTracking();
                         hasStartedLaunch = true;
                     }
-                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()))) {
+                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
                         follower.followPath(humanPickup);
                         launchSystem.toggleTracking();
                         hasStartedLaunch = false;
@@ -225,7 +225,7 @@ public class AutoRedShort extends OpMode {
                         launchSystem.toggleTracking();
                         hasStartedLaunch = true;
                     }
-                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()))) {
+                    if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
                         follower.followPath(park);
                         launchSystem.toggleTracking();
                         hasStartedLaunch = false;
@@ -280,7 +280,7 @@ public class AutoRedShort extends OpMode {
                 .addPath(new BezierCurve(pickup2Pose, new Pose(110, 60), openGatePose))
                 .setLinearHeadingInterpolation(pickup2Pose.getHeading(), openGatePose.getHeading())
                 .addParametricCallback(0.5, () -> configuration.intakeMotor.setPower(0.7))
-                .addParametricCallback(0.7, () -> follower.setMaxPower(0.6))
+                .addParametricCallback(0.7, () -> follower.setMaxPower(0.7))
                 .build();
 
         score2 = follower.pathBuilder()
@@ -310,7 +310,7 @@ public class AutoRedShort extends OpMode {
 
 
         humanPickup =  follower.pathBuilder()
-                .addPath(new BezierCurve(scorePose, new Pose(142, 63), human))
+                .addPath(new BezierCurve(scorePose, new Pose(144, 63), human))
                 .setConstantHeadingInterpolation(human.getHeading())
                 .addParametricCallback(0.5, () -> configuration.intakeMotor.setPower(1))
                 .addParametricCallback(0.8, () -> follower.setMaxPower(0.5))
