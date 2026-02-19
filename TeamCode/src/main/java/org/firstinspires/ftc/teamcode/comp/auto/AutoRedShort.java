@@ -119,7 +119,7 @@ public class AutoRedShort extends OpMode {
 
             case 3: // Pickup 1 -> Score 1
                 if(!follower.isBusy()) {
-                    follower.setMaxPower(0.6);
+                    follower.setMaxPower(0.65);
                     follower.followPath(score1);
                     hasStartedLaunch = false;
                     setPathState(4);
@@ -134,7 +134,7 @@ public class AutoRedShort extends OpMode {
                         hasStartedLaunch = true;
                     }
                     if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
-                        follower.setMaxPower(0.8);
+                        follower.setMaxPower(1);
                         follower.followPath(alignRow2);
                         hasStartedLaunch = false;
                         launchSystem.toggleTracking();
@@ -145,6 +145,7 @@ public class AutoRedShort extends OpMode {
 
             case 5: // Align 2 -> Pickup 2
                 if(!follower.isBusy()) {
+                    follower.setMaxPower(0.8);
                     follower.followPath(pickupRow2);
                     configuration.intakeMotor.setPower(1);
                     setPathState(6);
@@ -155,7 +156,7 @@ public class AutoRedShort extends OpMode {
                 if(!follower.isBusy()) {
 
                     follower.followPath(openGate);
-                    follower.setMaxPower(0.8);
+                    follower.setMaxPower(1);
                     setPathState(7);
                     getOpenGateTimer.reset();
                 }
@@ -165,7 +166,7 @@ public class AutoRedShort extends OpMode {
                 if(!follower.isBusy() && getOpenGateTimer.seconds()>2.7) {
 
                     follower.followPath(score2);
-                    follower.setMaxPower(0.6);
+                    follower.setMaxPower(0.65);
                     hasStartedLaunch = false;
 
                     setPathState(8);
@@ -180,7 +181,7 @@ public class AutoRedShort extends OpMode {
                         hasStartedLaunch = true;
                     }
                     if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
-                        follower.setMaxPower(0.8);
+                        follower.setMaxPower(1);
                         follower.followPath(alignRow3);
                         hasStartedLaunch = false;
                         launchSystem.toggleTracking();
@@ -191,6 +192,7 @@ public class AutoRedShort extends OpMode {
 
             case 9: // Align 3 -> Pickup 3
                 if(!follower.isBusy()) {
+                    follower.setMaxPower(0.8);
                     follower.followPath(pickupRow3);
                     configuration.intakeMotor.setPower(1);
                     setPathState(10);
@@ -199,7 +201,7 @@ public class AutoRedShort extends OpMode {
 
             case 10: // Pickup 3 -> Score 3
                 if(!follower.isBusy()) {
-                    follower.setMaxPower(0.8);
+                    follower.setMaxPower(0.65);
                     follower.followPath(score3);
                     hasStartedLaunch = false;
                     setPathState(11);

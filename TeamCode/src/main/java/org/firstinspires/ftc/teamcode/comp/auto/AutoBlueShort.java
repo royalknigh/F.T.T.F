@@ -122,6 +122,7 @@ public class AutoBlueShort extends OpMode {
 
             case 3: // Pickup 1 -> Score 1
                 if(!follower.isBusy()) {
+                    follower.setMaxPower(0.65);
                     follower.followPath(score1);
                     hasStartedLaunch = false;
                     setPathState(4);
@@ -136,6 +137,7 @@ public class AutoBlueShort extends OpMode {
                         hasStartedLaunch = true;
                     }
                     if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
+                        follower.setMaxPower(1);
                         follower.followPath(alignRow2);
                         hasStartedLaunch = false;
                         launchSystem.toggleTracking();
@@ -146,6 +148,7 @@ public class AutoBlueShort extends OpMode {
 
             case 5: // Align 2 -> Pickup 2
                 if(!follower.isBusy()) {
+                    follower.setMaxPower(0.8);
                     follower.followPath(pickupRow2);
                     configuration.intakeMotor.setPower(1);
                     setPathState(6);
@@ -191,6 +194,7 @@ public class AutoBlueShort extends OpMode {
 
             case 9: // Align 3 -> Pickup 3
                 if(!follower.isBusy()) {
+                    follower.setMaxPower(0.8);
                     follower.followPath(pickupRow3);
                     configuration.intakeMotor.setPower(1);
                     setPathState(10);
@@ -199,8 +203,8 @@ public class AutoBlueShort extends OpMode {
 
             case 10: // Pickup 3 -> Score 3
                 if(!follower.isBusy()) {
+                    follower.setMaxPower(0.65);
                     follower.followPath(score3);
-
                     hasStartedLaunch = false;
                     setPathState(11);
                 }
@@ -214,6 +218,7 @@ public class AutoBlueShort extends OpMode {
                         hasStartedLaunch = true;
                     }
                     if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
+                        follower.setMaxPower(0.8);
                         follower.followPath(humanPickup);
                         launchSystem.toggleTracking();
                         hasStartedLaunch = false;
