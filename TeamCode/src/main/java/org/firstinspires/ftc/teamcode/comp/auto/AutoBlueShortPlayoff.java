@@ -31,13 +31,13 @@ public class AutoBlueShortPlayoff extends OpMode {
     private final Pose scorePose = new Pose(50, 86, Math.toRadians(180));
 
     private final Pose fisrtLinePose = new Pose(48, 84, Math.toRadians(180));
-    private final Pose pickup1Pose = new Pose(20, 84, Math.toRadians(180));
+    private final Pose pickup1Pose = new Pose(22, 84, Math.toRadians(180));
 
     private final Pose secondLinePose = new Pose(48, 60, Math.toRadians(180));
-    private final Pose pickup2Pose = new Pose(10, 60, Math.toRadians(180));
+    private final Pose pickup2Pose = new Pose(11, 60, Math.toRadians(180));
     private final Pose openGatePose = new Pose(15, 69, Math.toRadians(180));
 
-    private final Pose pickupGate = new Pose(6, 55, Math.toRadians(140));
+    private final Pose pickupGate = new Pose(7, 55, Math.toRadians(140));
 
     private final Pose thirdLinePose = new Pose(48, 38, Math.toRadians(180));
     private final Pose pickup3Pose = new Pose(10, 38, Math.toRadians(180));
@@ -117,14 +117,14 @@ public class AutoBlueShortPlayoff extends OpMode {
                 break;
 
             case 3:
-                if(!follower.isBusy() && gateTimer.seconds()>1.5){
+                if(!follower.isBusy() && gateTimer.seconds()>1.8){
                     follower.followPath(gateCollect);
                     setPathState(4);
                     gateTimer.reset();
                 }
                 break;
             case 4:
-                if(!follower.isBusy() && gateTimer.seconds()>2){
+                if(!follower.isBusy() && gateTimer.seconds()>1.8){
                     follower.followPath(scoreGate);
                     setPathState(5);
                 }
@@ -162,14 +162,14 @@ public class AutoBlueShortPlayoff extends OpMode {
                 }
                 break;
             case 8:
-                if(!follower.isBusy()&& gateTimer.seconds()>1.5){
+                if(!follower.isBusy()&& gateTimer.seconds()>1.8){
                     follower.followPath(gateCollect);
                     gateTimer.reset();
                     setPathState(9);
                 }
                 break;
             case 9:
-                if(!follower.isBusy() && gateTimer.seconds()>2.){
+                if(!follower.isBusy() && gateTimer.seconds()>1.8){
                     follower.followPath(scoreGate);
                     setPathState(10);
                 }

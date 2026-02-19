@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.comp.auto;
 
 import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
@@ -19,24 +20,23 @@ public class AutoBlueLong extends OpMode {
     private Follower follower;
     private Timer pathTimer;
     private int pathState = 0;
-    public final Pose blueGoalPose = new Pose(0, 141);
-    private final Pose startPose = new Pose(55, 9, Math.toRadians(90));
-    private final Pose scorePose = new Pose(60, 13, Math.toRadians(130));
-    private final Pose lineup = new Pose(43, 35, Math.toRadians(180));
-    private final Pose pickupPose = new Pose(12, 35, Math.toRadians(180));
-    private final Pose bottomPose = new Pose(12, 11, Math.toRadians(180));
-    private final Pose gatePickup = new Pose(12, 11, Math.toRadians(90));
-    private LaunchSystem launchSystem;
-    private boolean hasStartedLaunch = false;
+    private final Pose startPose = new Pose(55, 10, Math.toRadians(90));
+    private final Pose scorePose = new Pose(60, 22, Math.toRadians(70));
+    private final Pose lineup = new Pose(49, 35, Math.toRadians(0));
+    private final Pose pickupPose = new Pose(12, 35, Math.toRadians(0));
+    private final Pose bottomPose = new Pose(8, 10, Math.toRadians(0));
+    private final Pose gatePickup = new Pose(10, 10, Math.toRadians(90));
     private Configuration configuration;
+    private boolean hasStartedLaunch = false;
+    private LaunchSystem launchSystem;
     private PathChain scorePreload, alignRow, pickupRow, score, pickupBottom, score2, bottomLineup;
-    // scorePreload ( startPose - > scorePose ) : 1
-    // alignRow ( scorePose - > lineup ) : 2
-    // pickupRow ( lineup -> pickupPose ) : 3
-    // score ( pickupPose -> scorePose ) : 4
-    // alignTop ( score -> topLineup ) : 5
-    // pickupTop ( topLineup -> topPickup ) : 6
-    // score2 ( topPickup -> score ) : 7
+    //    startPose -> score0 ( scorePreload )
+//    scorePreload -> lineup ( alignRow )
+//    lineup -> rowPickup ( pickupRow )
+//    rowPickup -> scorePose ( score )
+//    score1 -> bottomPickup ( pickupBottom )
+//    bottomPickup -> scorePose ( score2 )
+//    score2 -> gatePickup ( gateLineup )
     public void buildPaths() {
         scorePreload = follower.pathBuilder()
                 .addPath(new BezierLine(startPose, scorePose))
@@ -57,11 +57,13 @@ public class AutoBlueLong extends OpMode {
                 .setLinearHeadingInterpolation(pickupPose.getHeading(), scorePose.getHeading())
                 .build();
         pickupBottom = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose, bottomPose))
-                .setLinearHeadingInterpolation(scorePose.getHeading(), bottomPose.getHeading())
+                .addPath(new BezierCurve(scorePose, new Pose(28,  41), bottomPose)) //116, 41
+                .setTangentHeadingInterpolation()
                 .build();
+
         score2 = follower.pathBuilder()
-                .addPath(new BezierLine(bottomPose, scorePose))
+                .addPath(new BezierCurve(bottomPose, new Pose(33,  23), scorePose))
+                .addParametricCallback(0.6, () -> configuration.intakeMotor.setPower(0))
 //                    .addParametricCallback(0.5, () -> launchSystem.start(LaunchSystem.highVelocity, interval))
                 .setLinearHeadingInterpolation(bottomPose.getHeading(), scorePose.getHeading())
                 .build();
@@ -76,7 +78,7 @@ public class AutoBlueLong extends OpMode {
             case 0:
                 follower.followPath(scorePreload);
                 follower.setMaxPower(1);
-                hasStartedLaunch = false;
+                hasStartedLaunch=false;
                 setPathState(1);
                 break;
             case 1:
@@ -101,22 +103,26 @@ public class AutoBlueLong extends OpMode {
                     follower.setMaxPower(0.4);
                     setPathState(3);
                 }
+                break;
             case 3:
                 if (!follower.isBusy()) {
                     follower.followPath(score);
                     configuration.intakeMotor.setPower(0);
                     follower.setMaxPower(0.8);
+                    hasStartedLaunch=false;
                     setPathState(4);
                 }
+                break;
             case 4:
                 if(!follower.isBusy()) {
-                    if(!hasStartedLaunch) {
+                    if(!launchSystem.isLaunching() && !hasStartedLaunch) {
+                        launchSystem.toggleTracking();
                         launchSystem.start(Tele.speed);
                         hasStartedLaunch = true;
-                        launchSystem.toggleTracking();
                     }
                     if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
                         follower.followPath(pickupBottom);
+                        configuration.intakeMotor.setPower(0.8);
                         hasStartedLaunch = false;
                         launchSystem.toggleTracking();
                         setPathState(5);
@@ -126,31 +132,24 @@ public class AutoBlueLong extends OpMode {
             case 5:
                 if (!follower.isBusy()) {
                     follower.followPath(score2);
-                    configuration.intakeMotor.setPower(0);
-                    follower.setMaxPower(0);
                     setPathState(6);
                 }
             case 6:
                 if(!follower.isBusy()) {
-                    if(!hasStartedLaunch) {
+                    if(!launchSystem.isLaunching() && !hasStartedLaunch) {
+                        launchSystem.toggleTracking();
                         launchSystem.start(Tele.speed);
                         hasStartedLaunch = true;
-                        launchSystem.toggleTracking();
                     }
                     if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
                         follower.followPath(bottomLineup);
                         hasStartedLaunch = false;
+                        configuration.intakeMotor.setPower(0.5);
                         launchSystem.toggleTracking();
-                        configuration.intakeMotor.setPower(0.8);
                         setPathState(-1);
                     }
                 }
                 break;
-//                if (!follower.isBusy()) {
-//                    follower.followPath(bottomLineup);
-//                    configuration.intakeMotor.setPower(0.8);
-//                    setPathState(-1);
-//                }
         }
     }
 
@@ -182,8 +181,12 @@ public class AutoBlueLong extends OpMode {
     public void loop() {
         follower.update();
         launchSystem.updateTurret(follower.getPose());
+        double currentDist = launchSystem.returnDistance(follower.getPose());
+        Tele.speedCalculator(currentDist);
+        configuration.marco.setPosition(Tele.angleCalculator(currentDist));
         autonomousPathUpdate();
         telemetry.addData("Path State", pathState);
+        telemetry.addData("Distance: ", currentDist);
         telemetry.update();
     }
 

@@ -22,12 +22,12 @@ public class Constants {
             .lateralZeroPowerAcceleration(-76) //-78.62  -68.60  -55.29   -74.72   -43.69
             .translationalPIDFCoefficients(new PIDFCoefficients(0.12, 0, 0.01, 0))
             .headingPIDFCoefficients(new PIDFCoefficients(0.6, 0, 0.01, 0.005))
-            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.01, 0, 0.00001, 0.6, 0.01))
+            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.01, 0, 0.0001, 0.6, 0.007))
             .centripetalScaling(0.00043)
             .mass(12);
 
 
-    public static PathConstraints pathConstraints = new PathConstraints(0.95, 0, 1, 1);
+    public static PathConstraints pathConstraints = new PathConstraints(0.95, 0, 2, 1);
 
     public static Follower createFollower(HardwareMap hardwareMap) {
         return new FollowerBuilder(followerConstants, hardwareMap)

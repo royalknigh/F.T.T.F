@@ -185,6 +185,8 @@ public class LaunchSystem {
 
     private boolean speedReached = false;
 
+    public static double recoilMult=0.035;
+
     public boolean update(double distance, double currentDynamicSpeed) {
         updatePIDF();
         if (!isLaunching) return true;
@@ -193,28 +195,46 @@ public class LaunchSystem {
         lm2.setVelocity(currentDynamicSpeed);
         this.currentTargetVelocity = currentDynamicSpeed;
 
-        // Check speed only once
         if (!speedReached && getVelocity() >= currentTargetVelocity - 10) {
             speedReached = true;
             launchTimer.reset();
         }
 
         if (speedReached) {
+            // Gradually decrease angle over time to compensate for velocity drop
+            double recoilCompensation = 0;
+            if (distance > 120) {
+                recoilCompensation = launchTimer.seconds() * recoilMult; // grows over time
+            }
+            marco.setPosition(Range.clip(marco.getPosition() - recoilCompensation, 0, 0.85));
+
             if (launchTimer.milliseconds() > 100) {
                 stopper.setPosition(passBall);
                 if (distance <= 90) im.setPower(0.8);
                 else if (distance < 110) im.setPower(0.75);
-                else im.setPower(0.7);
+                else im.setPower(0.6);
             }
 
-            if (launchTimer.milliseconds() > 900) {
-                isLaunching = false;
-                speedReached = false; // reset for next shot
-                resetTimer = true;
-                stopper.setPosition(holdBall);
-                im.setPower(0);
-                idle();
-                return true;
+            if (distance <= 100) {
+                if (launchTimer.milliseconds() > 900) {
+                    isLaunching = false;
+                    speedReached = false;
+                    resetTimer = true;
+                    stopper.setPosition(holdBall);
+                    im.setPower(0);
+                    idle();
+                    return true;
+                }
+            } else {
+                if (launchTimer.milliseconds() > 1200) {
+                    isLaunching = false;
+                    speedReached = false;
+                    resetTimer = true;
+                    stopper.setPosition(holdBall);
+                    im.setPower(0);
+                    idle();
+                    return true;
+                }
             }
         }
 

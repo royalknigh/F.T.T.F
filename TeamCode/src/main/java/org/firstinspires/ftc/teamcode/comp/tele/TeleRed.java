@@ -50,22 +50,27 @@ public class TeleRed extends OpMode {
 
     @Override
     public void loop() {
-        follower.update();
-        follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x * 0.5, true);
-
-        // Update Turret and Shooting Logic
         stateMachine();
         launchSystem.updateTurret(follower.getPose());
 
         // --- Nudge Controls (D-Pad Left/Right) ---
+        follower.update();
+        follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x * 0.5, true);
 
-        if (gamepad1.dpadUpWasPressed()) {
-            launchSystem.adjustOffset(7);
+        if (gamepad1.bWasPressed()) {
+            launchSystem.adjustOffset(4);
         }
 
-        if (gamepad1.dpadDownWasPressed()) {
-            launchSystem.adjustOffset(-7);
+        if (gamepad1.xWasPressed()) {
+            launchSystem.adjustOffset(-4);
         }
+
+        if (gamepad1.dpadUpWasPressed()) speed += 50;      // Fine-tune speed
+        if (gamepad1.dpadDownWasPressed()) speed -= 50;
+        if (gamepad1.dpadRightWasPressed()) angle += 0.02; // Fine-tune hood angle
+        if (gamepad1.dpadLeftWasPressed()) angle -= 0.02;
+
+        if (config.intakeMotor.isOverCurrent()) gamepad1.rumbleBlips(3);
 
         if(gamepad1.rightBumperWasPressed()) {
             follower.setPose(new Pose(125, 117, Math.toRadians(38)));
@@ -73,8 +78,8 @@ public class TeleRed extends OpMode {
         }
 
         double currentDist = launchSystem.returnDistance(follower.getPose());
-        Tele.speedCalculator(currentDist);
-        marco.setPosition(Tele.angleCalculator(currentDist));
+        speedCalculator(currentDist);
+        marco.setPosition(angleCalculator(currentDist));
 
         // --- Hood & Velocity Controls ---
 //        speedCalculator(launchSystem.returnDistance(follower.getPose()));
@@ -85,7 +90,7 @@ public class TeleRed extends OpMode {
 
     public void stateMachine() {
         if (gamepad1.aWasPressed()) launchSystem.toggleTracking();
-        if (gamepad1.xWasPressed()) launchSystem.startReset();
+//        if (gamepad1.xWasPressed()) launchSystem.startReset();
 
 //        if(config.intakeMotor.isOverCurrent())
 //            gamepad1.rumbleBlips(3);
@@ -95,7 +100,6 @@ public class TeleRed extends OpMode {
                 if (gamepad1.leftBumperWasPressed()) idle = !idle;
                 if (idle) launchSystem.idle(); else launchSystem.fullStop();
                 config.intakeMotor.setPower(gamepad1.left_trigger > 0.1 ? gamepad1.left_trigger : 0);
-                LaunchSystem.idleVelocity = speed-300;
 
                 if (gamepad1.yWasPressed()) {
                     state = State.LAUNCH;
@@ -103,12 +107,8 @@ public class TeleRed extends OpMode {
                 }
                 break;
             case LAUNCH:
-                double currentDist = launchSystem.returnDistance(follower.getPose());
-                speedCalculator(currentDist);
-                marco.setPosition(angleCalculator(currentDist));
-
                 if (launchSystem.update(launchSystem.returnDistance(follower.getPose()), speed)) {
-                    state = TeleRed.State.PIKCUP;
+                    state = State.PIKCUP;
                 }
                 break;
         }
@@ -140,8 +140,8 @@ public class TeleRed extends OpMode {
     public static double angleCalculator(double x){
 //        if(gamepad1.dpadUpWasPressed()) angle += 0.03;
 //        if(gamepad1.dpadDownWasPressed()) angle -= 0.03;
-        angle = -0.0000723306*(x*x)+0.0199051*x-0.713552;;
-        angle = Range.clip(angle, 0.15, 0.85);
+        angle = -0.0000723306*(x*x)+0.0199051*x-0.713552;
+        angle = Range.clip(angle, 0, 0.85);
         return angle;
     }
 
@@ -149,6 +149,7 @@ public class TeleRed extends OpMode {
 //        if (gamepad1.dpadRightWasPressed()) speed += 50;
 //        if (gamepad1.dpadLeftWasPressed())  speed -= 50;
         speed = 7.57841*x+1215.68433;
+        LaunchSystem.idleVelocity = speed-300;
         speed = Range.clip(speed, 1000, 2500);
 
     }

@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.comp.auto;
 
 import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
@@ -19,12 +20,12 @@ public class AutoRedLong extends OpMode {
     private Follower follower;
     private Timer pathTimer;
     private int pathState = 0;
-    private final Pose startPose = new Pose(89, 9, Math.toRadians(90));
-    private final Pose scorePose = new Pose(84, 13, Math.toRadians(70));
-    private final Pose lineup = new Pose(101, 35, Math.toRadians(0));
+    private final Pose startPose = new Pose(89, 10, Math.toRadians(90));
+    private final Pose scorePose = new Pose(84, 22, Math.toRadians(70));
+    private final Pose lineup = new Pose(95, 35, Math.toRadians(0));
     private final Pose pickupPose = new Pose(132, 35, Math.toRadians(0));
-    private final Pose bottomPose = new Pose(134, 9, Math.toRadians(0));
-    private final Pose gatePickup = new Pose(136, 10, Math.toRadians(90));
+    private final Pose bottomPose = new Pose(136, 10, Math.toRadians(0));
+    private final Pose gatePickup = new Pose(134, 10, Math.toRadians(90));
     private Configuration configuration;
     private boolean hasStartedLaunch = false;
     private LaunchSystem launchSystem;
@@ -56,12 +57,13 @@ public class AutoRedLong extends OpMode {
                     .setLinearHeadingInterpolation(pickupPose.getHeading(), scorePose.getHeading())
                     .build();
             pickupBottom = follower.pathBuilder()
-                    .addPath(new BezierLine(scorePose, bottomPose))
-                    .setLinearHeadingInterpolation(scorePose.getHeading(), bottomPose.getHeading())
+                    .addPath(new BezierCurve(scorePose, new Pose(116,  41), bottomPose)) //116, 41
+                    .setTangentHeadingInterpolation()
                     .build();
 
             score2 = follower.pathBuilder()
-                    .addPath(new BezierLine(bottomPose, scorePose))
+                    .addPath(new BezierCurve(bottomPose, new Pose(111,  23), scorePose))
+                    .addParametricCallback(0.6, () -> configuration.intakeMotor.setPower(0))
 //                    .addParametricCallback(0.5, () -> launchSystem.start(LaunchSystem.highVelocity, interval))
                     .setLinearHeadingInterpolation(bottomPose.getHeading(), scorePose.getHeading())
                     .build();
@@ -120,6 +122,7 @@ public class AutoRedLong extends OpMode {
                     }
                     if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
                         follower.followPath(pickupBottom);
+                        configuration.intakeMotor.setPower(0.8);
                         hasStartedLaunch = false;
                         launchSystem.toggleTracking();
                         setPathState(5);
@@ -129,8 +132,6 @@ public class AutoRedLong extends OpMode {
             case 5:
                 if (!follower.isBusy()) {
                     follower.followPath(score2);
-                    configuration.intakeMotor.setPower(0);
-                    follower.setMaxPower(0);
                     setPathState(6);
                 }
             case 6:
@@ -143,6 +144,7 @@ public class AutoRedLong extends OpMode {
                     if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
                         follower.followPath(bottomLineup);
                         hasStartedLaunch = false;
+                        configuration.intakeMotor.setPower(0.5);
                         launchSystem.toggleTracking();
                         setPathState(-1);
                     }
@@ -179,8 +181,12 @@ public class AutoRedLong extends OpMode {
     public void loop() {
         follower.update();
         launchSystem.updateTurret(follower.getPose());
+        double currentDist = launchSystem.returnDistance(follower.getPose());
+        Tele.speedCalculator(currentDist);
+        configuration.marco.setPosition(Tele.angleCalculator(currentDist));
         autonomousPathUpdate();
         telemetry.addData("Path State", pathState);
+        telemetry.addData("Distance: ", currentDist);
         telemetry.update();
     }
 
