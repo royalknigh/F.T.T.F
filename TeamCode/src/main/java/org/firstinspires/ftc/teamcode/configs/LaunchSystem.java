@@ -34,8 +34,8 @@ public class LaunchSystem {
     private double integralSum = 0;
     private final double kS = 0.07;
 
-    public static double P = 30;
-    public static double F = 14.3;
+    public static double P = 25;
+    public static double F = 14.5;
 
     // --- Gearing Logic (REV Through-Bore 8192 TPR | 190/30 Ratio) ---
     private final double TICKS_PER_DEGREE = (8192.0 * (190.0 / 35.0)) / 360.0;
@@ -173,30 +173,43 @@ public class LaunchSystem {
     }
 
     public void idle() {
+        if (isLaunching) return;
         isLaunching = false;
         stopper.setPosition(holdBall);
         im.setPower(0);
-        LaunchSystem.idleVelocity = speed-200;
+
         lm1.setVelocity(idleVelocity);
         lm2.setVelocity(idleVelocity);
     }
 
 
+    private boolean speedReached = false;
+
     public boolean update(double distance, double currentDynamicSpeed) {
         updatePIDF();
         if (!isLaunching) return true;
+
         lm1.setVelocity(currentDynamicSpeed);
         lm2.setVelocity(currentDynamicSpeed);
-
         this.currentTargetVelocity = currentDynamicSpeed;
-        if (getVelocity() >= currentTargetVelocity) {
-            if(resetTimer) { launchTimer.reset(); resetTimer = false; }
-            stopper.setPosition(passBall);
-            if(distance<=90) im.setPower(0.85);
-            if(distance> 90 && distance<110) im.setPower(0.8);
-            if(distance >110) im.setPower(0.7);
-            if (launchTimer.milliseconds() > 600) {
+
+        // Check speed only once
+        if (!speedReached && getVelocity() >= currentTargetVelocity - 10) {
+            speedReached = true;
+            launchTimer.reset();
+        }
+
+        if (speedReached) {
+            if (launchTimer.milliseconds() > 100) {
+                stopper.setPosition(passBall);
+                if (distance <= 90) im.setPower(0.8);
+                else if (distance < 110) im.setPower(0.75);
+                else im.setPower(0.7);
+            }
+
+            if (launchTimer.milliseconds() > 900) {
                 isLaunching = false;
+                speedReached = false; // reset for next shot
                 resetTimer = true;
                 stopper.setPosition(holdBall);
                 im.setPower(0);
@@ -204,6 +217,7 @@ public class LaunchSystem {
                 return true;
             }
         }
+
         return false;
     }
 

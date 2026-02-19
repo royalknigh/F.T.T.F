@@ -33,16 +33,16 @@ public class AutoBlueShortPlayoff extends OpMode {
     private final Pose fisrtLinePose = new Pose(48, 84, Math.toRadians(180));
     private final Pose pickup1Pose = new Pose(20, 84, Math.toRadians(180));
 
-    private final Pose secondLinePose = new Pose(48, 62, Math.toRadians(180));
-    private final Pose pickup2Pose = new Pose(10, 62, Math.toRadians(180));
+    private final Pose secondLinePose = new Pose(48, 60, Math.toRadians(180));
+    private final Pose pickup2Pose = new Pose(10, 60, Math.toRadians(180));
     private final Pose openGatePose = new Pose(15, 69, Math.toRadians(180));
 
-    private final Pose pickupGate = new Pose(7, 57, Math.toRadians(140));
+    private final Pose pickupGate = new Pose(6, 55, Math.toRadians(140));
 
     private final Pose thirdLinePose = new Pose(48, 38, Math.toRadians(180));
     private final Pose pickup3Pose = new Pose(10, 38, Math.toRadians(180));
 
-    private final Pose human = new Pose(6, 10, Math.toRadians(230));
+//    private final Pose human = new Pose(6, 10, Math.toRadians(230));
 
     private Configuration configuration;
     private LaunchSystem launchSystem;
@@ -124,7 +124,7 @@ public class AutoBlueShortPlayoff extends OpMode {
                 }
                 break;
             case 4:
-                if(!follower.isBusy() && gateTimer.seconds()>2.25){
+                if(!follower.isBusy() && gateTimer.seconds()>2){
                     follower.followPath(scoreGate);
                     setPathState(5);
                 }
@@ -140,6 +140,7 @@ public class AutoBlueShortPlayoff extends OpMode {
                         follower.followPath(firstRow);
                         hasStartedLaunch = false;
                         launchSystem.toggleTracking();
+
                         setPathState(7);
                     }
                 }
@@ -155,19 +156,20 @@ public class AutoBlueShortPlayoff extends OpMode {
                         follower.followPath(openGate);
                         hasStartedLaunch = false;
                         launchSystem.toggleTracking();
+                        gateTimer.reset();
                         setPathState(8);
                     }
                 }
                 break;
             case 8:
-                if(!follower.isBusy()){
+                if(!follower.isBusy()&& gateTimer.seconds()>1.5){
                     follower.followPath(gateCollect);
                     gateTimer.reset();
                     setPathState(9);
                 }
                 break;
             case 9:
-                if(!follower.isBusy() && gateTimer.seconds()>2.25){
+                if(!follower.isBusy() && gateTimer.seconds()>2.){
                     follower.followPath(scoreGate);
                     setPathState(10);
                 }
@@ -180,10 +182,10 @@ public class AutoBlueShortPlayoff extends OpMode {
                         launchSystem.toggleTracking();
                     }
                     if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)){
-                        follower.followPath(park);
+                        follower.followPath(openGate);
                         hasStartedLaunch = false;
                         launchSystem.toggleTracking();
-                        setPathState(11);
+                        setPathState(8);
                     }
                 }
                 break;

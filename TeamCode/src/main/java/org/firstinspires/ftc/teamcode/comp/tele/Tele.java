@@ -1,4 +1,6 @@
 package org.firstinspires.ftc.teamcode.comp.tele;
+import static org.firstinspires.ftc.teamcode.comp.tele.TeleRed.speed;
+
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
@@ -102,7 +104,7 @@ public class Tele extends OpMode {
                 if (gamepad1.leftBumperWasPressed()) idle = !idle;
                 if (idle) launchSystem.idle(); else launchSystem.fullStop();
                 config.intakeMotor.setPower(gamepad1.left_trigger > 0.1 ? gamepad1.left_trigger : 0);
-                LaunchSystem.idleVelocity = speed-300;
+
 
                 if (gamepad1.yWasPressed()) {
                     state = State.LAUNCH;
@@ -110,7 +112,6 @@ public class Tele extends OpMode {
                 }
                 break;
             case LAUNCH:
-
 
                 if (launchSystem.update(launchSystem.returnDistance(follower.getPose()), speed)) {
                     state = State.PIKCUP;
@@ -147,7 +148,7 @@ public class Tele extends OpMode {
     public static double angleCalculator(double x){
 //        if(gamepad1.dpadUpWasPressed()) angle += 0.03;
 //        if(gamepad1.dpadDownWasPressed()) angle -= 0.03;
-        angle = 0.0052523*x-0.0160238 -0.16;
+        angle = -0.0000723306*(x*x)+0.0199051*x-0.713552;
         angle = Range.clip(angle, 0, 0.85);
         return angle;
     }
@@ -155,7 +156,8 @@ public class Tele extends OpMode {
     public static void speedCalculator(double x){
 //        if (gamepad1.dpadRightWasPressed()) speed += 50;
 //        if (gamepad1.dpadLeftWasPressed())  speed -= 50;
-        speed = 6.88374*x+1229.15448 ;
+        speed = 7.57841*x+1215.68433;
+        LaunchSystem.idleVelocity = speed-300;
         speed = Range.clip(speed, 1000, 2500);
 
     }

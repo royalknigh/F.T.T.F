@@ -31,10 +31,10 @@ public class AutoRedShortPlayoff extends OpMode {
     private final Pose startPose = new Pose(108, 137, Math.toRadians(0));
     private final Pose scorePose = new Pose(92, 85, Math.toRadians(0));
     private final Pose fisrtLinePose = new Pose(96, 85, Math.toRadians(0));
-    private final Pose pickup1Pose = new Pose(130, 85, Math.toRadians(0));
+    private final Pose pickup1Pose = new Pose(128, 85, Math.toRadians(0));
     private final Pose secondLinePose = new Pose(96, 60, Math.toRadians(0));
-    private final Pose pickup2Pose = new Pose(132, 60, Math.toRadians(0));
-    private final Pose openGatePose = new Pose(130, 65, Math.toRadians(0)); //gate
+    private final Pose pickup2Pose = new Pose(130, 60, Math.toRadians(0));
+    private final Pose openGatePose = new Pose(130, 68, Math.toRadians(0)); //gate
     private final Pose thirdLinePose = new Pose(96, 36, Math.toRadians(0));
     private final Pose pickupGate = new Pose(134, 57, Math.toRadians(40));
 
@@ -179,7 +179,7 @@ public class AutoRedShortPlayoff extends OpMode {
                         follower.followPath(park);
                         hasStartedLaunch = false;
                         launchSystem.toggleTracking();
-                        setPathState(11);
+                        setPathState(8);
                     }
                 }
                 break;
@@ -196,7 +196,7 @@ public class AutoRedShortPlayoff extends OpMode {
         scorePreload = follower.pathBuilder()
                 .addPath(new BezierLine(startPose, scorePose))
                 .setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading())
-//                .addParametricCallback(0.5, () -> launchSystem.adjustOffset(-7))
+                .addParametricCallback(0.5, () -> launchSystem.adjustOffset(2))
                 .addParametricCallback(0.7, () -> launch())
                 .build();
         middleRow = follower.pathBuilder()
