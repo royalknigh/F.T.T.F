@@ -149,7 +149,7 @@ public class Tele extends OpMode {
     public static double angleCalculator(double x){
 //        if(gamepad1.dpadUpWasPressed()) angle += 0.03;
 //        if(gamepad1.dpadDownWasPressed()) angle -= 0.03;
-        angle = -0.0000401694*x*x+0.0134248*x-0.380403;
+        angle = -0.0000723306*(x*x)+0.0199051*x-0.713552;
         angle = Range.clip(angle, 0, 0.85);
         return angle;
     }
@@ -157,7 +157,7 @@ public class Tele extends OpMode {
     public static void speedCalculator(double x){
 //        if (gamepad1.dpadRightWasPressed()) speed += 50;
 //        if (gamepad1.dpadLeftWasPressed())  speed -= 50;
-        speed = 7.88564*x+1273.80319;
+        speed = 7.57841*x+1215.68433;
         LaunchSystem.idleVelocity = speed-200;
         speed = Range.clip(speed, 1000, 2500);
 
