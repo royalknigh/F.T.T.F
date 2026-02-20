@@ -203,7 +203,7 @@ public class AutoBlueShortPlayoff extends OpMode {
                 .addPath(new BezierLine(startPose, scorePose))
                 .setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading())
 //                .addParametricCallback(0.5, () -> launchSystem.adjustOffset(-7))
-                .addParametricCallback(0.7, () -> launch())
+                .addParametricCallback(0.9, () -> launch())
                 .build();
         middleRow = follower.pathBuilder()
                 .addPath(new BezierLine(scorePose, secondLinePose))
@@ -216,7 +216,7 @@ public class AutoBlueShortPlayoff extends OpMode {
                 .addPath(new BezierCurve(pickup2Pose, new Pose(43,68),scorePose))
                 .setConstantHeadingInterpolation(scorePose.getHeading())
                 .addParametricCallback(0.4, ()-> configuration.intakeMotor.setPower(0))
-                .addParametricCallback(0.8, () -> launch())
+                .addParametricCallback(0.9, () -> launch())
                 .build();
 
         
