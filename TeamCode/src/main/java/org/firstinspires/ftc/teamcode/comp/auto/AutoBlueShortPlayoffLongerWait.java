@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.comp.auto;
 
 import static org.firstinspires.ftc.teamcode.configs.LaunchSystem.blueGoalPose;
-import static org.firstinspires.ftc.teamcode.configs.LaunchSystem.redGoalPose;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
@@ -19,8 +18,8 @@ import org.firstinspires.ftc.teamcode.configs.LaunchSystem;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.comp.tele.Tele;
 
-@Autonomous(name = "Auto Red Short playoff")
-public class AutoRedShortPlayoff extends OpMode {
+@Autonomous(name = "Auto Blue Short playoff longer")
+public class AutoBlueShortPlayoffLongerWait extends OpMode {
 
     private Follower follower;
     private Timer pathTimer;
@@ -28,30 +27,28 @@ public class AutoRedShortPlayoff extends OpMode {
     private int pathState = 0;
     private boolean hasStartedLaunch = false;
 
-    private final Pose startPose = new Pose(111, 136, Math.toRadians(0));
-    private final Pose scorePose = new Pose(92, 85, Math.toRadians(0));
-    private final Pose scorePose3 = new Pose(94, 90, Math.toRadians(0));
-    private final Pose fisrtLinePose = new Pose(96, 85, Math.toRadians(0));
-    private final Pose pickup1Pose = new Pose(124, 85, Math.toRadians(0));
-    private final Pose secondLinePose = new Pose(96, 60, Math.toRadians(0));
-    private final Pose pickup2Pose = new Pose(126, 60, Math.toRadians(0));
-    private final Pose openGatePose = new Pose(128, 65, Math.toRadians(0)); //gate
-    private final Pose thirdLinePose = new Pose(96, 36, Math.toRadians(0));
-    private final Pose pickupGate = new Pose(134, 54, Math.toRadians(40));
-    private final Pose openGatePose2 = new Pose(129, 65, Math.toRadians(0)); //gate
+    private final Pose startPose = new Pose(34, 136.5, Math.toRadians(180));
+    private final Pose scorePose = new Pose(50, 86, Math.toRadians(180));
 
-    private final Pose openGatePose3 = new Pose(129, 73, Math.toRadians(0)); //gate
+    private final Pose fisrtLinePose = new Pose(48, 84, Math.toRadians(180));
+    private final Pose pickup1Pose = new Pose(22, 84, Math.toRadians(180));
 
+    private final Pose secondLinePose = new Pose(48, 60, Math.toRadians(180));
+    private final Pose pickup2Pose = new Pose(11, 60, Math.toRadians(180));
+    private final Pose openGatePose = new Pose(15, 69, Math.toRadians(180));
 
+    private final Pose pickupGate = new Pose(7, 55, Math.toRadians(140));
 
-    private final Pose human = new Pose(139, 16, Math.toRadians(-70));
+    private final Pose thirdLinePose = new Pose(48, 38, Math.toRadians(180));
+    private final Pose pickup3Pose = new Pose(10, 38, Math.toRadians(180));
+
+//    private final Pose human = new Pose(6, 10, Math.toRadians(230));
 
     private Configuration configuration;
     private LaunchSystem launchSystem;
 
     private PathChain scorePreload, middleRow, pickupMiddleRow, scoreMiddleRow, alignFirstRow,
-            firstRow, openGate, scoreFirstRow, scoreGate, gateCollect, park, openGate2, scoreGate2,
-            gateCollect2, openGate3, scoreGate3;
+            firstRow, openGate, scoreFirstRow, scoreGate, gateCollect, park;
 
     @Override
     public void init() {
@@ -60,7 +57,7 @@ public class AutoRedShortPlayoff extends OpMode {
         follower.setStartingPose(startPose);
 
         configuration = new Configuration(hardwareMap);
-        launchSystem = new LaunchSystem(new Configuration(hardwareMap), redGoalPose);
+        launchSystem = new LaunchSystem(new Configuration(hardwareMap), blueGoalPose);
         buildPaths();
     }
 
@@ -68,7 +65,6 @@ public class AutoRedShortPlayoff extends OpMode {
     public void start() {
          // Ensure turret is aiming
         launchSystem.idle();
-        resetRuntime();
         setPathState(0);
     }
 
@@ -80,10 +76,9 @@ public class AutoRedShortPlayoff extends OpMode {
         launchSystem.updateTurret(follower.getPose());
         double currentDist = launchSystem.returnDistance(follower.getPose());
         Tele.speedCalculator(currentDist);
-        configuration.marco.setPosition(Tele.angleCalculator(currentDist));
+        configuration.marco.setPosition(Tele.angleCalculator(currentDist)+0.05);
 
         autonomousPathUpdate();
-//        if(getRuntime()>29) setPathState(14);
 
         telemetry.addData("Path State", pathState);
         telemetry.addData("Velo", "%.0f / %.0f", launchSystem.getVelocity(), Tele.speed);
@@ -122,14 +117,14 @@ public class AutoRedShortPlayoff extends OpMode {
                 break;
 
             case 3:
-                if(!follower.isBusy() && gateTimer.seconds()>2){
+                if(!follower.isBusy() && gateTimer.seconds()>2.){
                     follower.followPath(gateCollect);
                     setPathState(4);
                     gateTimer.reset();
                 }
                 break;
             case 4:
-                if(!follower.isBusy() && gateTimer.seconds()>2.05){
+                if(!follower.isBusy() && gateTimer.seconds()>1.8){
                     follower.followPath(scoreGate);
                     setPathState(5);
                 }
@@ -145,6 +140,7 @@ public class AutoRedShortPlayoff extends OpMode {
                         follower.followPath(firstRow);
                         hasStartedLaunch = false;
                         launchSystem.toggleTracking();
+
                         setPathState(7);
                     }
                 }
@@ -157,7 +153,7 @@ public class AutoRedShortPlayoff extends OpMode {
                         launchSystem.toggleTracking();
                     }
                     if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)){
-                        follower.followPath(openGate2);
+                        follower.followPath(openGate);
                         hasStartedLaunch = false;
                         launchSystem.toggleTracking();
                         gateTimer.reset();
@@ -166,15 +162,15 @@ public class AutoRedShortPlayoff extends OpMode {
                 }
                 break;
             case 8:
-                if(!follower.isBusy() && gateTimer.seconds()>2.){
-                    follower.followPath(gateCollect2);
+                if(!follower.isBusy()&& gateTimer.seconds()>1.8){
+                    follower.followPath(gateCollect);
                     gateTimer.reset();
                     setPathState(9);
                 }
                 break;
             case 9:
-                if(!follower.isBusy() && gateTimer.seconds()>2.05){
-                    follower.followPath(scoreGate2);
+                if(!follower.isBusy() && gateTimer.seconds()>1.8){
+                    follower.followPath(scoreGate);
                     setPathState(10);
                 }
                 break;
@@ -186,24 +182,23 @@ public class AutoRedShortPlayoff extends OpMode {
                         launchSystem.toggleTracking();
                     }
                     if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)){
-                        follower.followPath(park);
+                        follower.followPath(openGate);
                         hasStartedLaunch = false;
                         launchSystem.toggleTracking();
-                        launchSystem.adjustOffset(60);
-                        setPathState(-11);
+                        setPathState(11);
                     }
                 }
                 break;
             case 11:
-                if(!follower.isBusy()){
-                    follower.followPath(gateCollect2);
+                if(!follower.isBusy()&& gateTimer.seconds()>1.8){
+                    follower.followPath(gateCollect);
                     gateTimer.reset();
                     setPathState(12);
                 }
                 break;
             case 12:
-                if(!follower.isBusy() && gateTimer.seconds()>2){
-                    follower.followPath(scoreGate3);
+                if(!follower.isBusy() && gateTimer.seconds()>1.8){
+                    follower.followPath(scoreGate);
                     setPathState(13);
                 }
                 break;
@@ -215,16 +210,14 @@ public class AutoRedShortPlayoff extends OpMode {
                         launchSystem.toggleTracking();
                     }
                     if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)){
-                        follower.followPath(park);
+                        follower.followPath(openGate);
                         hasStartedLaunch = false;
-                        launchSystem.adjustOffset(60);
+                        launchSystem.adjustOffset(-45);
                         setPathState(-1);
                     }
                 }
                 break;
-//            case 14:
-//                launchSystem.adjustOffset(60);
-//                break;
+
 
         }
     }
@@ -238,8 +231,8 @@ public class AutoRedShortPlayoff extends OpMode {
         scorePreload = follower.pathBuilder()
                 .addPath(new BezierLine(startPose, scorePose))
                 .setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading())
-                .addParametricCallback(0.5, () -> launchSystem.adjustOffset(2))
-                .addParametricCallback(0.7, () -> launch())
+//                .addParametricCallback(0.5, () -> launchSystem.adjustOffset(-7))
+                .addParametricCallback(0.9, () -> launch())
                 .build();
         middleRow = follower.pathBuilder()
                 .addPath(new BezierLine(scorePose, secondLinePose))
@@ -249,10 +242,10 @@ public class AutoRedShortPlayoff extends OpMode {
                 .setConstantHeadingInterpolation(scorePose.getHeading())
                 .addParametricCallback(0, ()-> configuration.intakeMotor.setPower(1))
 
-                .addPath(new BezierCurve(pickup2Pose, new Pose(90,70),scorePose))
+                .addPath(new BezierCurve(pickup2Pose, new Pose(43,68),scorePose))
                 .setConstantHeadingInterpolation(scorePose.getHeading())
-                .addParametricCallback(0.3, ()-> configuration.intakeMotor.setPower(0))
-                .addParametricCallback(0.8, () -> launch())
+                .addParametricCallback(0.4, ()-> configuration.intakeMotor.setPower(0))
+                .addParametricCallback(0.9, () -> launch())
                 .build();
 
         
@@ -263,11 +256,11 @@ public class AutoRedShortPlayoff extends OpMode {
 
                 .addPath(new BezierLine(pickup1Pose, scorePose))
                 .setLinearHeadingInterpolation(pickup1Pose.getHeading(), scorePose.getHeading())
-                .addParametricCallback(0.4, ()-> configuration.intakeMotor.setPower(0))
+                .addParametricCallback(0.5, ()-> configuration.intakeMotor.setPower(0))
                 .build();
 
         openGate = follower.pathBuilder()
-                .addPath(new BezierCurve(scorePose, new Pose(90,70), openGatePose))
+                .addPath(new BezierCurve(scorePose, new Pose(45,65), openGatePose))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), openGatePose.getHeading())
                 .build();
 
@@ -278,44 +271,16 @@ public class AutoRedShortPlayoff extends OpMode {
                 .build();
 
         scoreGate = follower.pathBuilder()
-                .addPath(new BezierCurve(pickupGate, new Pose(90,70), scorePose))
+                .addPath(new BezierCurve(pickupGate, new Pose(45,65), scorePose))
                 .setLinearHeadingInterpolation(pickupGate.getHeading(), scorePose.getHeading())
-                .addParametricCallback(0.3, ()-> configuration.intakeMotor.setPower(0))
-                .build();
-
-        openGate2 = follower.pathBuilder()
-                .addPath(new BezierCurve(scorePose, new Pose(90,70), openGatePose2))
-                .setLinearHeadingInterpolation(scorePose.getHeading(), openGatePose.getHeading())
-                .build();
-
-        gateCollect2 = follower.pathBuilder()
-                .addPath(new BezierLine(openGatePose2, pickupGate))
-                .setLinearHeadingInterpolation(openGatePose.getHeading(), pickupGate.getHeading())
-                .addParametricCallback(0, ()-> configuration.intakeMotor.setPower(1))
-                .build();
-
-        scoreGate2 = follower.pathBuilder()
-                .addPath(new BezierCurve(pickupGate, new Pose(90,70), scorePose))
-                .setLinearHeadingInterpolation(pickupGate.getHeading(), scorePose.getHeading())
-                .addParametricCallback(0.3, ()-> configuration.intakeMotor.setPower(0))
+                .addParametricCallback(0.2, ()-> configuration.intakeMotor.setPower(0))
                 .build();
 
         park = follower.pathBuilder()
                 .addPath(new BezierLine(scorePose, secondLinePose))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), secondLinePose.getHeading())
+                .addParametricCallback(0.5, () -> launchSystem.adjustOffset(15))
                 .build();
-
-        openGate3 = follower.pathBuilder()
-                .addPath(new BezierCurve(scorePose, new Pose(90,70), openGatePose2))
-                .setLinearHeadingInterpolation(scorePose.getHeading(), openGatePose.getHeading())
-                .build();
-
-        scoreGate3 = follower.pathBuilder()
-                .addPath(new BezierCurve(pickupGate, new Pose(90,70), scorePose3))
-                .setLinearHeadingInterpolation(pickupGate.getHeading(), scorePose.getHeading())
-                .addParametricCallback(0.3, ()-> configuration.intakeMotor.setPower(0))
-                .build();
-
         
     }
 
@@ -327,6 +292,7 @@ public class AutoRedShortPlayoff extends OpMode {
     @Override
     public void stop(){
         Tele.startPose = follower.getPose();
+        launchSystem.adjustOffset(15);
         launchSystem.fullStop();
     }
 }

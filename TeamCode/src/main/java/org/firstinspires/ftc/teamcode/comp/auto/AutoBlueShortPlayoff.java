@@ -27,7 +27,7 @@ public class AutoBlueShortPlayoff extends OpMode {
     private int pathState = 0;
     private boolean hasStartedLaunch = false;
 
-    private final Pose startPose = new Pose(36, 137, Math.toRadians(180));
+    private final Pose startPose = new Pose(34, 136.5, Math.toRadians(180));
     private final Pose scorePose = new Pose(50, 86, Math.toRadians(180));
 
     private final Pose fisrtLinePose = new Pose(48, 84, Math.toRadians(180));
@@ -37,7 +37,7 @@ public class AutoBlueShortPlayoff extends OpMode {
     private final Pose pickup2Pose = new Pose(11, 60, Math.toRadians(180));
     private final Pose openGatePose = new Pose(15, 69, Math.toRadians(180));
 
-    private final Pose pickupGate = new Pose(7, 55, Math.toRadians(140));
+    private final Pose pickupGate = new Pose(7, 54, Math.toRadians(140));
 
     private final Pose thirdLinePose = new Pose(48, 38, Math.toRadians(180));
     private final Pose pickup3Pose = new Pose(10, 38, Math.toRadians(180));
@@ -182,10 +182,10 @@ public class AutoBlueShortPlayoff extends OpMode {
                         launchSystem.toggleTracking();
                     }
                     if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)){
-                        follower.followPath(openGate);
+                        follower.followPath(park);
                         hasStartedLaunch = false;
-                        launchSystem.toggleTracking();
-                        setPathState(8);
+                        launchSystem.adjustOffset(-50);
+                        setPathState(-1);
                     }
                 }
                 break;
@@ -219,7 +219,7 @@ public class AutoBlueShortPlayoff extends OpMode {
                 .addParametricCallback(0.9, () -> launch())
                 .build();
 
-        
+
         firstRow = follower.pathBuilder()
                 .addPath(new BezierLine(scorePose, pickup1Pose))
                 .setConstantHeadingInterpolation(scorePose.getHeading())
@@ -250,8 +250,9 @@ public class AutoBlueShortPlayoff extends OpMode {
         park = follower.pathBuilder()
                 .addPath(new BezierLine(scorePose, secondLinePose))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), secondLinePose.getHeading())
+//                .addParametricCallback(0.5, () -> launchSystem.adjustOffset(15))
                 .build();
-        
+
     }
 
     public void launch(){
@@ -262,6 +263,7 @@ public class AutoBlueShortPlayoff extends OpMode {
     @Override
     public void stop(){
         Tele.startPose = follower.getPose();
+        launchSystem.adjustOffset(15);
         launchSystem.fullStop();
     }
 }

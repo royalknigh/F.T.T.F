@@ -210,7 +210,7 @@ public class LaunchSystem {
 
             if (launchTimer.milliseconds() > 100) {
                 stopper.setPosition(passBall);
-                if (distance <= 90) im.setPower(0.8);
+                if (distance <= 90) im.setPower(0.85);
                 else if (distance < 110) im.setPower(0.75);
                 else im.setPower(0.6);
             }

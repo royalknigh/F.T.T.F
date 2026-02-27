@@ -26,7 +26,7 @@ public class AutoRedShort extends OpMode {
     private boolean hasStartedLaunch = false;
 
     // --- Poses ---
-    private final Pose startPose = new Pose(108, 137, Math.toRadians(0));
+    private final Pose startPose = new Pose(110, 136.5, Math.toRadians(0));
     private final Pose scorePose = new Pose(92, 85, Math.toRadians(0));
     private final Pose fisrtLinePose = new Pose(96, 85, Math.toRadians(0));
     private final Pose pickup1Pose = new Pose(130, 85, Math.toRadians(0));
@@ -233,10 +233,11 @@ public class AutoRedShort extends OpMode {
                         follower.followPath(park);
                         launchSystem.toggleTracking();
                         hasStartedLaunch = false;
-                        setPathState(-1);
+                        setPathState(13);
                     }
                 }
                 break;
+
         }
     }
 
@@ -291,6 +292,7 @@ public class AutoRedShort extends OpMode {
                 .addPath(new BezierLine(openGatePose, scorePose))
                 .setLinearHeadingInterpolation(openGatePose.getHeading(), scorePose.getHeading())
                 .addParametricCallback(0.3, () -> configuration.intakeMotor.setPower(0))
+                .addParametricCallback(0.3, () -> launchSystem.adjustOffset(-3))
                 .setTValueConstraint(0.9)
                 .build();
 

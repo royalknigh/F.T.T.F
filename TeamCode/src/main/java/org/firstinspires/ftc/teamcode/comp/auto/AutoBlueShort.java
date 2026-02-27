@@ -28,7 +28,7 @@ public class AutoBlueShort extends OpMode {
     private boolean hasStartedLaunch = false;
 
     // --- Poses ---
-    private final Pose startPose = new Pose(36, 137, Math.toRadians(180));
+    private final Pose startPose = new Pose(34, 136.5, Math.toRadians(180));
     private final Pose scorePose = new Pose(50, 86, Math.toRadians(180));
 
     private final Pose fisrtLinePose = new Pose(48, 84, Math.toRadians(180));
@@ -203,7 +203,7 @@ public class AutoBlueShort extends OpMode {
 
             case 10: // Pickup 3 -> Score 3
                 if(!follower.isBusy()) {
-                    follower.setMaxPower(0.65);
+                    follower.setMaxPower(1);
                     follower.followPath(score3);
                     hasStartedLaunch = false;
                     setPathState(11);
@@ -218,7 +218,7 @@ public class AutoBlueShort extends OpMode {
                         hasStartedLaunch = true;
                     }
                     if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
-                        follower.setMaxPower(0.8);
+                        follower.setMaxPower(1);
                         follower.followPath(humanPickup);
                         launchSystem.toggleTracking();
                         hasStartedLaunch = false;
@@ -253,7 +253,7 @@ public class AutoBlueShort extends OpMode {
         scorePreload = follower.pathBuilder()
                 .addPath(new BezierLine(startPose, scorePose))
                 .setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading())
-                .addParametricCallback(0.3, () -> launchSystem.adjustOffset(-2))
+//                .addParametricCallback(0.3, () -> launchSystem.adjustOffset(-2))
                 .build();
 
         alignRow1 = follower.pathBuilder()
@@ -271,7 +271,7 @@ public class AutoBlueShort extends OpMode {
                 .addPath(new BezierLine(pickup1Pose, scorePose))
                 .setLinearHeadingInterpolation(pickup1Pose.getHeading(), scorePose.getHeading())
                 .addParametricCallback(0.6, () -> configuration.intakeMotor.setPower(0))
-                .setTValueConstraint(0.9)
+//                .setTValueConstraint(0.9)
                 .build();
 
         alignRow2 = follower.pathBuilder()
@@ -296,7 +296,7 @@ public class AutoBlueShort extends OpMode {
                 .setLinearHeadingInterpolation(openGatePose.getHeading(), scorePose.getHeading())
                 .addParametricCallback(0.3, () -> configuration.intakeMotor.setPower(0))
 //                .addParametricCallback(0.3, () -> launchSystem.adjustOffset(-2))
-                .setTValueConstraint(0.9)
+//                .setTValueConstraint(0.9)
                 .build();
 
         alignRow3 = follower.pathBuilder()
@@ -314,7 +314,7 @@ public class AutoBlueShort extends OpMode {
                 .setLinearHeadingInterpolation(pickup3Pose.getHeading(), scorePose.getHeading())
                 .addParametricCallback(0, () -> configuration.intakeMotor.setPower(0.7))
                 .addParametricCallback(0.6, () -> configuration.intakeMotor.setPower(0))
-                .setTValueConstraint(0.9)
+//                .setTValueConstraint(0.9)
                 .build();
 
 
@@ -342,6 +342,7 @@ public class AutoBlueShort extends OpMode {
     @Override
     public void stop(){
         Tele.startPose = follower.getPose();
+        LaunchSystem.lastSavedPosition = launchSystem.getCurrentDeg();
         launchSystem.fullStop();
     }
 }
