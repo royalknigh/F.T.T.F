@@ -166,7 +166,6 @@ public class LaunchSystem {
         this.isLaunching = true;
         this.resetTimer = true;
     }
-
     public void idle() {
         if (isLaunching) return;
         isLaunching = false;
@@ -176,9 +175,6 @@ public class LaunchSystem {
         lm1.setVelocity(idleVelocity);
         lm2.setVelocity(idleVelocity);
     }
-
-
-
 
     public boolean update(double distance, double currentDynamicSpeed) {
         updatePIDF();
@@ -218,14 +214,11 @@ public class LaunchSystem {
                     return true;
                 }
             } else {
-                // Check if flywheel is within 15 ticks of target before allowing intake
-                if (getVelocity() >= currentTargetVelocity - 30) {
-                    im.setPower(1); // Your existing power for distance > 110
+                if (getVelocity() >= currentTargetVelocity - 50) {
+                    im.setPower(1);
                 } else {
                     im.setPower(0);
                     launchTimer.reset();
-
-                    // Kill intake if speed hasn't recovered
                 }
 
                 if (launchTimer.milliseconds() > 500) {
@@ -242,8 +235,6 @@ public class LaunchSystem {
 
         return false;
     }
-
-
     public void fullStop() { isLaunching = false; lm1.setVelocity(0); lm2.setVelocity(0); }
     public double getVelocity() { return (lm1.getVelocity() + lm2.getVelocity()) / 2.0; }
     public double returnDistance(Pose robotPose){

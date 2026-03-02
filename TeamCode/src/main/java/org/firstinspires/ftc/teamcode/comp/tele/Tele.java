@@ -164,7 +164,7 @@ public class Tele extends OpMode {
 
     public static void speedCalculator(double x){
         if(!testing)
-            speed = 7.24843*x+1325.78616;
+            speed = -0.0380723*x*x+15.60338*x+913.1088;
         LaunchSystem.idleVelocity = speed - speedDifference;
         speed = Range.clip(speed, 1000, 2500);
 
