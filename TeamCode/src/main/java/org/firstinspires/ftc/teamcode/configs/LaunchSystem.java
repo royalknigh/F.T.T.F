@@ -197,7 +197,7 @@ public class LaunchSystem {
             }
             marco.setPosition(Range.clip(marco.getPosition() - recoilCompensation, 0, 0.85));
 
-            if (launchTimer.milliseconds() > 100) {
+            if (launchTimer.milliseconds() > 50) {     //was 100
                 stopper.setPosition(passBall);
                 if (distance <= 90) im.setPower(0.9);
                 else if (distance < 120) im.setPower(0.8);
@@ -221,7 +221,7 @@ public class LaunchSystem {
                     launchTimer.reset();
                 }
 
-                if (launchTimer.milliseconds() > 500) {
+                if (launchTimer.milliseconds() > 400) {     //was 500
                     isLaunching = false;
                     speedReached = false;
                     resetTimer = true;

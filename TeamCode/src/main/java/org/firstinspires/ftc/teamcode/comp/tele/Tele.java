@@ -174,7 +174,7 @@ public class Tele extends OpMode {
         recoilMult  = 0.5;
     }
 
-    public static double speedDifference = 150;
+    public static double speedDifference = 75; //   was 150
 
 
     public Pose getPose(){
