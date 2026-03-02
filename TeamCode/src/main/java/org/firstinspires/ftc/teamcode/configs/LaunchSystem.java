@@ -35,7 +35,9 @@ public class LaunchSystem {
     private final double kS = 0.07;
 
     public static double P = 25;
-    public static double F = 14.5;
+    public static double F = 13;
+
+
 
     // --- Gearing Logic (REV Through-Bore 8192 TPR | 190/30 Ratio) ---
     private final double TICKS_PER_DEGREE = (8192.0 * (190.0 / 35.0)) / 360.0;
@@ -45,10 +47,13 @@ public class LaunchSystem {
     private boolean isResetting = false;
     private boolean isLaunching = false;
     private boolean resetTimer = true;
-    private boolean go = false;
 
-    public static final Pose blueGoalPose = new Pose(0, 141);
-    public static final Pose redGoalPose = new Pose(144, 142);
+    private boolean speedReached = false;
+
+    public static double recoilMult=0.015;
+
+    public static final Pose blueGoalPose = new Pose(0, 144);
+    public static final Pose redGoalPose = new Pose(144, 144);
     private Pose goalPose = blueGoalPose;
 
     public LaunchSystem(Configuration config, Pose pose) {
@@ -94,11 +99,8 @@ public class LaunchSystem {
             double fieldAngle = Math.toDegrees(Math.atan2(dy, dx));
             double robotHeading = Math.toDegrees(robotPose.getHeading());
 
-            // 1. Calculăm unde ar fi coșul în mod ideal (-180 la 180)
             double rawTarget = betterNormalize(fieldAngle - robotHeading);
 
-            // 2. LIMITARE STRICTĂ (-100 la 100)
-            // Dacă coșul este în afara range-ului, tureta "îngheață" la marginea cea mai apropiată.
             if (rawTarget > 100) {
                 targetDeg = 100;
             } else if (rawTarget < -100) {
@@ -109,10 +111,6 @@ public class LaunchSystem {
         } else {
             targetDeg = isResetting ? 0 : currentDeg;
         }
-
-        // 3. CALCULUL ERORII LINIAR (FĂRĂ betterNormalize)
-        // Dacă tureta e la 100 și ținta devine -100, eroarea va fi -200.
-        // Motorul va roti tureta invers pe tot parcursul celor 200 de grade.
         double error = targetDeg - currentDeg;
 
         // PID Math
@@ -165,11 +163,8 @@ public class LaunchSystem {
     public boolean isTracking() { return trackingEnabled; }
 
     public void start(double target) {
-//        this.currentTargetVelocity = target;
         this.isLaunching = true;
         this.resetTimer = true;
-//        lm1.setVelocity(target);
-//        lm2.setVelocity(target);
     }
 
     public void idle() {
@@ -183,9 +178,7 @@ public class LaunchSystem {
     }
 
 
-    private boolean speedReached = false;
 
-    public static double recoilMult=0.035;
 
     public boolean update(double distance, double currentDynamicSpeed) {
         updatePIDF();
@@ -195,7 +188,7 @@ public class LaunchSystem {
         lm2.setVelocity(currentDynamicSpeed);
         this.currentTargetVelocity = currentDynamicSpeed;
 
-        if (!speedReached && getVelocity() >= currentTargetVelocity - 10) {
+        if (!speedReached && getVelocity() >= currentTargetVelocity - 30) {
             speedReached = true;
             launchTimer.reset();
         }
@@ -203,19 +196,18 @@ public class LaunchSystem {
         if (speedReached) {
             // Gradually decrease angle over time to compensate for velocity drop
             double recoilCompensation = 0;
-            if (distance > 120) {
+            if (distance < 120) {
                 recoilCompensation = launchTimer.seconds() * recoilMult; // grows over time
             }
             marco.setPosition(Range.clip(marco.getPosition() - recoilCompensation, 0, 0.85));
 
             if (launchTimer.milliseconds() > 100) {
                 stopper.setPosition(passBall);
-                if (distance <= 90) im.setPower(0.85);
-                else if (distance < 110) im.setPower(0.75);
-                else im.setPower(0.6);
+                if (distance <= 90) im.setPower(0.9);
+                else if (distance < 120) im.setPower(0.8);
             }
 
-            if (distance <= 100) {
+            if (distance <= 120) {
                 if (launchTimer.milliseconds() > 900) {
                     isLaunching = false;
                     speedReached = false;
@@ -226,7 +218,17 @@ public class LaunchSystem {
                     return true;
                 }
             } else {
-                if (launchTimer.milliseconds() > 1200) {
+                // Check if flywheel is within 15 ticks of target before allowing intake
+                if (getVelocity() >= currentTargetVelocity - 30) {
+                    im.setPower(1); // Your existing power for distance > 110
+                } else {
+                    im.setPower(0);
+                    launchTimer.reset();
+
+                    // Kill intake if speed hasn't recovered
+                }
+
+                if (launchTimer.milliseconds() > 500) {
                     isLaunching = false;
                     speedReached = false;
                     resetTimer = true;

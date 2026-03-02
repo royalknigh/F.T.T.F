@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.comp.tele;
 import static org.firstinspires.ftc.teamcode.comp.tele.TeleRed.speed;
+import static org.firstinspires.ftc.teamcode.configs.LaunchSystem.recoilMult;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
@@ -35,10 +36,13 @@ public class Tele extends OpMode {
     public static double speed = 1500;
     public boolean idle = true;
     public static Servo marco;
+
+    public static boolean testing = false;
+
     @Override
     public void init() {
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(new Pose(8, 7, Math.toRadians(180)));
+        follower.setStartingPose(new Pose(80, 20, Math.toRadians(90)));
         follower.update();
         config = new Configuration(hardwareMap);
         launchSystem = new LaunchSystem(config, LaunchSystem.blueGoalPose);
@@ -54,6 +58,9 @@ public class Tele extends OpMode {
     public void loop() {
         follower.update();
         follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x * 0.5, true);
+
+        if(gamepad1.shareWasPressed())
+            testing = !testing;
 
         // Update Turret and Shooting Logic
         stateMachine();
@@ -116,6 +123,7 @@ public class Tele extends OpMode {
             case LAUNCH:
                 if (launchSystem.update(launchSystem.returnDistance(follower.getPose()), speed)) {
                     state = State.PIKCUP;
+                    gamepad1.rumbleBlips(3);
                 }
                 break;
         }
@@ -143,24 +151,27 @@ public class Tele extends OpMode {
         telemetry.addData("Velocity", "%.0f / %.0f", launchSystem.getVelocity(), speed);
 
         telemetry.addData("current: ", config.intakeMotor.getCurrent(CurrentUnit.AMPS));
+        telemetry.addData("testing9: ", testing);
         telemetry.update();
     }
 
     public static double angleCalculator(double x){
-//        if(gamepad1.dpadUpWasPressed()) angle += 0.03;
-//        if(gamepad1.dpadDownWasPressed()) angle -= 0.03;
-        angle = -0.0000723306*(x*x)+0.0199051*x-0.713552-.03;
+        if(!testing)
+            angle = 0.00612579*x-0.0628931;
         angle = Range.clip(angle, 0, 0.85);
         return angle;
     }
 
     public static void speedCalculator(double x){
-//        if (gamepad1.dpadRightWasPressed()) speed += 50;
-//        if (gamepad1.dpadLeftWasPressed())  speed -= 50;
-        speed = 7.57841*x+1215.68433;
-        LaunchSystem.idleVelocity = speed-speedDifference;
+        if(!testing)
+            speed = 7.24843*x+1325.78616;
+        LaunchSystem.idleVelocity = speed - speedDifference;
         speed = Range.clip(speed, 1000, 2500);
 
+    }
+
+    public static void recoilCalculator(double x){
+        recoilMult  = 0.5;
     }
 
     public static double speedDifference = 150;
