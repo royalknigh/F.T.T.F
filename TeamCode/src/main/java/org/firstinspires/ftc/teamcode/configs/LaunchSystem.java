@@ -24,7 +24,7 @@ public class LaunchSystem {
     // PERSISTENCE: Saved from Auto.stop()
     public static double lastSavedPosition = 0;
 
-    public double holdBall = 0.38, passBall = 0.7;
+    public static double holdBall = 0.38, middleBall = 0.45, passBall = 0.7;
 
     // --- PID Constants ---
     public static double turretP = 0.017;
@@ -52,8 +52,8 @@ public class LaunchSystem {
 
     public static double recoilMult=0.015;
 
-    public static final Pose blueGoalPose = new Pose(0, 144);
-    public static final Pose redGoalPose = new Pose(144, 144);
+    public static final Pose blueGoalPose = new Pose(0, 141);
+    public static final Pose redGoalPose = new Pose(142, 144);
     private Pose goalPose = blueGoalPose;
 
     public LaunchSystem(Configuration config, Pose pose) {
@@ -101,10 +101,10 @@ public class LaunchSystem {
 
             double rawTarget = betterNormalize(fieldAngle - robotHeading);
 
-            if (rawTarget > 100) {
-                targetDeg = 100;
-            } else if (rawTarget < -100) {
-                targetDeg = -100;
+            if (rawTarget > 160) {
+                targetDeg = 160;
+            } else if (rawTarget < -65) {
+                targetDeg = -65;
             } else {
                 targetDeg = rawTarget;
             }
@@ -197,10 +197,20 @@ public class LaunchSystem {
             }
             marco.setPosition(Range.clip(marco.getPosition() - recoilCompensation, 0, 0.85));
 
-            if (launchTimer.milliseconds() > 50) {     //was 100
+            if (launchTimer.milliseconds() > 100) {     //was 100
                 stopper.setPosition(passBall);
-                if (distance <= 90) im.setPower(0.9);
-                else if (distance < 120) im.setPower(0.8);
+                if (distance <= 90) {
+                    im.setPower(0.8);
+                    recoilMult = 0.015;
+                }
+                if (distance <= 120 && distance >90) {
+                    im.setPower(0.7);
+                    recoilMult = 0.015;
+                }
+                else if (distance < 120) {
+                    im.setPower(0.8);
+                    recoilMult = 0.02;
+                }
             }
 
             if (distance <= 120) {
@@ -214,10 +224,12 @@ public class LaunchSystem {
                     return true;
                 }
             } else {
-                if (getVelocity() >= currentTargetVelocity - 50) {
-                    im.setPower(1);
+                if (getVelocity() >= currentTargetVelocity - velocityDifference) {
+                    im.setPower(0.9);
+                    stopper.setPosition(passBall);
                 } else {
                     im.setPower(0);
+                    stopper.setPosition(middleBall);
                     launchTimer.reset();
                 }
 
@@ -235,6 +247,7 @@ public class LaunchSystem {
 
         return false;
     }
+    public static double velocityDifference = 100;
     public void fullStop() { isLaunching = false; lm1.setVelocity(0); lm2.setVelocity(0); }
     public double getVelocity() { return (lm1.getVelocity() + lm2.getVelocity()) / 2.0; }
     public double returnDistance(Pose robotPose){

@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.configs.LaunchSystem;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.comp.tele.Tele;
 
-@Disabled
+
 @Autonomous(name = "Auto Blue Long")
 public class AutoBlueLong extends OpMode {
 
@@ -23,10 +23,10 @@ public class AutoBlueLong extends OpMode {
     private Timer pathTimer;
     private int pathState = 0;
     private final Pose startPose = new Pose(55, 10, Math.toRadians(90));
-    private final Pose scorePose = new Pose(60, 22, Math.toRadians(70));
-    private final Pose lineup = new Pose(49, 35, Math.toRadians(0));
-    private final Pose pickupPose = new Pose(12, 35, Math.toRadians(0));
-    private final Pose bottomPose = new Pose(8, 10, Math.toRadians(0));
+    private final Pose scorePose = new Pose(60, 22, Math.toRadians(110));
+    private final Pose lineup = new Pose(49, 35, Math.toRadians(180));
+    private final Pose pickupPose = new Pose(12, 35, Math.toRadians(180));
+    private final Pose bottomPose = new Pose(8, 10, Math.toRadians(180));
     private final Pose gatePickup = new Pose(10, 10, Math.toRadians(90));
     private Configuration configuration;
     private boolean hasStartedLaunch = false;

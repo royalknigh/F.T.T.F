@@ -157,14 +157,14 @@ public class Tele extends OpMode {
 
     public static double angleCalculator(double x){
         if(!testing)
-            angle = 0.00612579*x-0.0628931;
+            angle = -0.0000455931*x*x+0.0147313*x-0.442741;
         angle = Range.clip(angle, 0, 0.85);
         return angle;
     }
 
     public static void speedCalculator(double x){
         if(!testing)
-            speed = -0.0380723*x*x+15.60338*x+913.1088;
+            speed =-0.0441983*x*x+16.81366*x+859.41643;
         LaunchSystem.idleVelocity = speed - speedDifference;
         speed = Range.clip(speed, 1000, 2500);
 
@@ -174,7 +174,7 @@ public class Tele extends OpMode {
         recoilMult  = 0.5;
     }
 
-    public static double speedDifference = 75; //   was 150
+    public static double speedDifference = 0; //   was 150
 
 
     public Pose getPose(){
