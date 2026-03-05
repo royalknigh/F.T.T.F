@@ -24,13 +24,14 @@ public class AutoRedLong extends OpMode {
     private Timer pathTimer;
     private int pathState = 0;
     private final Pose startPose = new Pose(89, 10, Math.toRadians(90));
-    private final Pose scorePose = new Pose(84, 22, Math.toRadians(70));
-    private final Pose lineup = new Pose(95, 42, Math.toRadians(0));
-    private final Pose pickupPose = new Pose(128, 42, Math.toRadians(0));
-    private final Pose bottomPose = new Pose(133, 10, Math.toRadians(0));
-    private final Pose gatePickup = new Pose(132, 10, Math.toRadians(0));
+    private final Pose scorePose = new Pose(83, 21, Math.toRadians(70));
+    private final Pose lineup = new Pose(95, 44, Math.toRadians(0));
+    private final Pose pickupPose = new Pose(124, 44, Math.toRadians(0));
+    private final Pose bottomPose = new Pose(127, 11, Math.toRadians(0));
+    private final Pose gatePickup = new Pose(129, 14, Math.toRadians(0));
     private Configuration configuration;
     private boolean hasStartedLaunch = false;
+//    private boolean failsafe = false;
     private LaunchSystem launchSystem;
     private PathChain scorePreload, alignRow, pickupRow, score, pickupBottom, score2, bottomLineup, score3, leave;
 //    startPose -> score0 ( scorePreload )
@@ -61,6 +62,9 @@ public class AutoRedLong extends OpMode {
                     .build();
             pickupBottom = follower.pathBuilder()
                     .addPath(new BezierCurve(scorePose, new Pose(117,  43), bottomPose)) //116, 41
+//                    .addTemporalCallback(2000, () -> {
+//                        failsafe = true;
+//                    })
                     .setTangentHeadingInterpolation()
                     .build();
 
@@ -71,7 +75,10 @@ public class AutoRedLong extends OpMode {
                     .setLinearHeadingInterpolation(bottomPose.getHeading(), scorePose.getHeading())
                     .build();
             bottomLineup = follower.pathBuilder()
-                    .addPath(new BezierCurve(scorePose, new Pose(116,  35), gatePickup))
+                    .addPath(new BezierCurve(scorePose, new Pose(116,  17), gatePickup))
+//                    .addTemporalCallback(2000, () ->{
+//                        failsafe = true;
+//                    })
                     .setTangentHeadingInterpolation()
                     .build();
             score3 = follower.pathBuilder()
@@ -84,7 +91,7 @@ public class AutoRedLong extends OpMode {
                 .addPath(new BezierLine(scorePose, new Pose(110, 25)))
                 .addParametricCallback(0.6, () -> configuration.intakeMotor.setPower(0))
 //                    .addParametricCallback(0.5, () -> launchSystem.start(LaunchSystem.highVelocity, interval))
-                .setLinearHeadingInterpolation(gatePickup.getHeading(), scorePose.getHeading())
+                .setConstantHeadingInterpolation(scorePose.getHeading())
                 .build();
     }
 
@@ -184,7 +191,7 @@ public class AutoRedLong extends OpMode {
                     if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
                         follower.followPath(bottomLineup);
                         hasStartedLaunch = false;
-                        configuration.intakeMotor.setPower(0);
+                        configuration.intakeMotor.setPower(0.8);
                         launchSystem.toggleTracking();
                         setPathState(9);
                     }
