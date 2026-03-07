@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.comp.auto;
 
 import static org.firstinspires.ftc.teamcode.configs.LaunchSystem.holdBall;
 
+import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
@@ -16,19 +17,19 @@ import org.firstinspires.ftc.teamcode.configs.Configuration;
 import org.firstinspires.ftc.teamcode.configs.LaunchSystem;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.comp.tele.Tele;
-
+@Configurable
 @Autonomous(name = "Auto Red Long")
 public class AutoRedLong extends OpMode {
 
     private Follower follower;
     private Timer pathTimer;
     private int pathState = 0;
-    private final Pose startPose = new Pose(89, 10, Math.toRadians(90));
+    private final Pose startPose = new Pose(89, 9, Math.toRadians(90));
     private final Pose scorePose = new Pose(83, 21, Math.toRadians(70));
-    private final Pose lineup = new Pose(95, 44, Math.toRadians(0));
-    private final Pose pickupPose = new Pose(124, 44, Math.toRadians(0));
-    private final Pose bottomPose = new Pose(127, 11, Math.toRadians(0));
-    private final Pose gatePickup = new Pose(129, 14, Math.toRadians(0));
+    private final Pose lineup = new Pose(95, 35.5, Math.toRadians(0));
+    private final Pose pickupPose = new Pose(125, 35.5, Math.toRadians(0));
+    private final Pose bottomPose = new Pose(136, 9.5, Math.toRadians(0)); // x 135
+    private final Pose gatePickup = new Pose(135, 9, Math.toRadians(0));
     private Configuration configuration;
     private boolean hasStartedLaunch = false;
 //    private boolean failsafe = false;
@@ -61,7 +62,8 @@ public class AutoRedLong extends OpMode {
                     .setLinearHeadingInterpolation(pickupPose.getHeading(), scorePose.getHeading())
                     .build();
             pickupBottom = follower.pathBuilder()
-                    .addPath(new BezierCurve(scorePose, new Pose(117,  43), bottomPose)) //116, 41
+                    .addPath(new BezierCurve(scorePose, new Pose(133,  59.5), bottomPose)) //116, 41
+                    .addParametricCallback(0.65, () -> follower.setMaxPower(0.75))
 //                    .addTemporalCallback(2000, () -> {
 //                        failsafe = true;
 //                    })
@@ -75,7 +77,7 @@ public class AutoRedLong extends OpMode {
                     .setLinearHeadingInterpolation(bottomPose.getHeading(), scorePose.getHeading())
                     .build();
             bottomLineup = follower.pathBuilder()
-                    .addPath(new BezierCurve(scorePose, new Pose(116,  17), gatePickup))
+                    .addPath(new BezierCurve(scorePose, new Pose(116,  19), gatePickup))
 //                    .addTemporalCallback(2000, () ->{
 //                        failsafe = true;
 //                    })
@@ -145,16 +147,16 @@ public class AutoRedLong extends OpMode {
                     if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
                         follower.setMaxPower(0.8);
                         follower.followPath(pickupBottom);
-                        configuration.intakeMotor.setPower(0.9);
+                        configuration.intakeMotor.setPower(1);
                         hasStartedLaunch = false;
                         launchSystem.toggleTracking();
-                        follower.setMaxPower(1);
                         setPathState(5);
                     }
                 }
                 break;
             case 5:
                 if (!follower.isBusy()) {
+                    follower.setMaxPower(1);
                     follower.followPath(score2);
                     setPathState(6);
                 }

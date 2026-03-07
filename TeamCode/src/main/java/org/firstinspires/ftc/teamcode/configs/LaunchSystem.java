@@ -24,7 +24,7 @@ public class LaunchSystem {
     // PERSISTENCE: Saved from Auto.stop()
     public static double lastSavedPosition = 0;
 
-    public static double holdBall = 0.38, middleBall = 0.45, passBall = 0.7;
+    public static double holdBall = 0.6, middleBall = 0.69, passBall = 0.78;
 
     // --- PID Constants ---
     public static double turretP = 0.017;
@@ -52,8 +52,8 @@ public class LaunchSystem {
 
     public static double recoilMult=0.015;
 
-    public static final Pose blueGoalPose = new Pose(0, 141);
-    public static final Pose redGoalPose = new Pose(142, 144);
+    public static final Pose blueGoalPose = new Pose(0, 144);
+    public static final Pose redGoalPose = new Pose(144, 141);
     private Pose goalPose = blueGoalPose;
 
     public LaunchSystem(Configuration config, Pose pose) {
@@ -84,7 +84,7 @@ public class LaunchSystem {
         turretMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // Load the handoff position
-        this.turretOffsetDeg = lastSavedPosition;
+//        this.turretOffsetDeg = lastSavedPosition;
 
         updatePIDF();
     }
@@ -229,7 +229,7 @@ public class LaunchSystem {
                     stopper.setPosition(passBall);
                 } else {
                     im.setPower(0);
-                    stopper.setPosition(middleBall);
+                    stopper.setPosition(holdBall);
                     launchTimer.reset();
                 }
 

@@ -130,13 +130,13 @@ public class TeleRed extends OpMode {
     }
 
     public static double angleCalculator(double x){
-        angle = -0.0000723306*(x*x)+0.0199051*x-0.713552-.03;
+        angle = -0.0000455931*x*x+0.0147313*x-0.442741;
         angle = Range.clip(angle, 0, 0.85);
         return angle;
     }
 
     public static void speedCalculator(double x){
-        speed = 7.57841*x+1215.68433;
+        speed =-0.0441983*x*x+16.81366*x+859.41643;
         LaunchSystem.idleVelocity = speed-Tele.speedDifference;
         speed = Range.clip(speed, 1000, 2500);
 

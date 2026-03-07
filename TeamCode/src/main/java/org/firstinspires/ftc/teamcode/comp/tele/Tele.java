@@ -84,7 +84,7 @@ public class Tele extends OpMode {
         if (config.intakeMotor.isOverCurrent()) gamepad1.rumbleBlips(3);
 
         if(gamepad1.rightBumperWasPressed()) {
-            follower.setPose(new Pose(20, 118, Math.toRadians(143)));
+            follower.setPose(new Pose(20, 122, Math.toRadians(144)));
             launchSystem.manualZeroTurret();
         }
 
