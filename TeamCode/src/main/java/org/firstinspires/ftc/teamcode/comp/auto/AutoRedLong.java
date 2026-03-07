@@ -49,13 +49,13 @@ public class AutoRedLong extends OpMode {
                     .setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading())
                     .build();
             alignRow = follower.pathBuilder()
-                    .addPath(new BezierLine(scorePose, lineup))
-                    .setLinearHeadingInterpolation(scorePose.getHeading(), lineup.getHeading())
+                    .addPath(new BezierCurve(scorePose, new Pose(89, 34), lineup))
+                    .setTangentHeadingInterpolation()
                     .build();
-            pickupRow = follower.pathBuilder()
-                    .addPath(new BezierLine(lineup, pickupPose))
-                    .setLinearHeadingInterpolation(lineup.getHeading(), pickupPose.getHeading())
-                    .build();
+//            pickupRow = follower.pathBuilder()
+//                    .addPath(new BezierLine(lineup, pickupPose))
+//                    .setLinearHeadingInterpolation(lineup.getHeading(), pickupPose.getHeading())
+//                    .build();
             score = follower.pathBuilder()
                     .addPath(new BezierLine(pickupPose, scorePose))
                     // .addParametricCallback(0.9, () -> launchSystem.start(LaunchSystem.highVelocity, interval))
@@ -122,22 +122,14 @@ public class AutoRedLong extends OpMode {
                 break;
             case 2:
                 if (!follower.isBusy()) {
-                    follower.followPath(pickupRow);
-                    configuration.intakeMotor.setPower(0.8);
-                    follower.setMaxPower(0.4);
-                    setPathState(3);
-                }
-                break;
-            case 3:
-                if (!follower.isBusy()) {
                     follower.followPath(score);
                     configuration.intakeMotor.setPower(0);
                     follower.setMaxPower(1);
                     hasStartedLaunch=false;
-                    setPathState(4);
+                    setPathState(3);
                 }
                 break;
-            case 4:
+            case 3:
                 if(!follower.isBusy()) {
                     if(!launchSystem.isLaunching() && !hasStartedLaunch) {
                         launchSystem.toggleTracking();
@@ -150,17 +142,17 @@ public class AutoRedLong extends OpMode {
                         configuration.intakeMotor.setPower(1);
                         hasStartedLaunch = false;
                         launchSystem.toggleTracking();
-                        setPathState(5);
+                        setPathState(4);
                     }
                 }
                 break;
-            case 5:
+            case 4:
                 if (!follower.isBusy()) {
                     follower.setMaxPower(1);
                     follower.followPath(score2);
                     setPathState(6);
                 }
-            case 6:
+            case 5:
                 if(!follower.isBusy()) {
                     if(!launchSystem.isLaunching() && !hasStartedLaunch) {
                         launchSystem.toggleTracking();
@@ -173,17 +165,17 @@ public class AutoRedLong extends OpMode {
                         configuration.intakeMotor.setPower(0.8);
                         launchSystem.toggleTracking();
                         follower.setMaxPower(1);
-                        setPathState(7);
+                        setPathState(6);
                     }
                 }
                 break;
-            case 7:
+            case 6:
                 if (!follower.isBusy()) {
                     follower.followPath(score3);
-                    setPathState(8);
+                    setPathState(7);
                 }
                 break;
-            case 8:
+            case 7:
                 if(!follower.isBusy()) {
                     if(!launchSystem.isLaunching() && !hasStartedLaunch) {
                         launchSystem.toggleTracking();
@@ -195,17 +187,17 @@ public class AutoRedLong extends OpMode {
                         hasStartedLaunch = false;
                         configuration.intakeMotor.setPower(0.8);
                         launchSystem.toggleTracking();
-                        setPathState(9);
+                        setPathState(8);
                     }
                 }
                 break;
-            case 9:
+            case 8:
                 if (!follower.isBusy()) {
                     follower.followPath(score3);
-                    setPathState(10);
+                    setPathState(9);
                 }
                 break;
-            case 10:
+            case 9:
                 if(!follower.isBusy()) {
                     if(!launchSystem.isLaunching() && !hasStartedLaunch) {
                         launchSystem.toggleTracking();
