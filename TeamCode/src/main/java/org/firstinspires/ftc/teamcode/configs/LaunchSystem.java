@@ -225,7 +225,7 @@ public class LaunchSystem {
                 }
             } else {
                 if (getVelocity() >= currentTargetVelocity - velocityDifference) {
-                    im.setPower(0.9);
+                    im.setPower(0.75);
                     stopper.setPosition(passBall);
                 } else {
                     im.setPower(0);
