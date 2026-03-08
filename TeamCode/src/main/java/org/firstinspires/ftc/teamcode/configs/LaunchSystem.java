@@ -24,7 +24,7 @@ public class LaunchSystem {
     // PERSISTENCE: Saved from Auto.stop()
     public static double lastSavedPosition = 0;
 
-    public static double holdBall = 0.6, middleBall = 0.69, passBall = 0.78;
+    public static double holdBall = 0.6, middleBall = 0.69, passBall = 0.85;
 
     // --- PID Constants ---
     public static double turretP = 0.017;
@@ -50,7 +50,7 @@ public class LaunchSystem {
 
     private boolean speedReached = false;
 
-    public static double recoilMult=0.015;
+    public static double recoilMult=0.014;
 
     public static final Pose blueGoalPose = new Pose(0, 144);
     public static final Pose redGoalPose = new Pose(144, 141);
@@ -197,15 +197,15 @@ public class LaunchSystem {
             }
             marco.setPosition(Range.clip(marco.getPosition() - recoilCompensation, 0, 0.85));
 
-            if (launchTimer.milliseconds() > 100) {     //was 100
+            if (launchTimer.milliseconds() > 50) {     //was 100x
                 stopper.setPosition(passBall);
                 if (distance <= 90) {
                     im.setPower(0.8);
-                    recoilMult = 0.015;
+                    recoilMult = 0.014;
                 }
                 if (distance <= 120 && distance >90) {
                     im.setPower(0.7);
-                    recoilMult = 0.015;
+                    recoilMult = 0.018;
                 }
                 else if (distance < 120) {
                     im.setPower(0.8);
