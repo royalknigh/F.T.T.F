@@ -247,7 +247,7 @@ public class LaunchSystem {
 
         return false;
     }
-    public static double velocityDifference = 100;
+    public static double velocityDifference = 76;
     public void fullStop() { isLaunching = false; lm1.setVelocity(0); lm2.setVelocity(0); }
     public double getVelocity() { return (lm1.getVelocity() + lm2.getVelocity()) / 2.0; }
     public double returnDistance(Pose robotPose){
