@@ -1,13 +1,10 @@
 package org.firstinspires.ftc.teamcode.comp.tele;
+import static org.firstinspires.ftc.teamcode.comp.tele.Tele.speedDifference;
+import static org.firstinspires.ftc.teamcode.comp.tele.Tele.speedVelocityGain;
+
 import com.bylazar.configurables.annotations.Configurable;
-import com.bylazar.telemetry.PanelsTelemetry;
-import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.HeadingInterpolator;
-import com.pedropathing.paths.Path;
-import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -17,8 +14,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.configs.Configuration;
 import org.firstinspires.ftc.teamcode.configs.LaunchSystem;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-
-import java.util.function.Supplier;
 
 @Configurable
 @TeleOp
@@ -33,6 +28,9 @@ public class TeleRed extends OpMode {
     public static double speed = 1500;
     public boolean idle = true;
     public static Servo marco;
+
+    public static boolean testing = false;
+
     @Override
     public void init() {
         follower = Constants.createFollower(hardwareMap);
@@ -50,35 +48,43 @@ public class TeleRed extends OpMode {
 
     @Override
     public void loop() {
-        stateMachine();
-        launchSystem.updateTurret(follower.getPose());
-
         follower.update();
         follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x * 0.5, true);
+
+        if (gamepad1.shareWasPressed())
+            testing = !testing;
+
+        stateMachine();
+        launchSystem.updateTurret(follower.getPose(), follower.getVelocity().getXComponent(), follower.getVelocity().getYComponent());
 
         if (gamepad1.bWasPressed()) {
             launchSystem.adjustOffset(4);
         }
-
         if (gamepad1.xWasPressed()) {
             launchSystem.adjustOffset(-4);
         }
 
-        if (gamepad1.dpadUpWasPressed()) speed += 50;      // Fine-tune speed
+        if (gamepad1.dpadUpWasPressed()) speed += 50;
         if (gamepad1.dpadDownWasPressed()) speed -= 50;
-        if (gamepad1.dpadRightWasPressed()) angle += 0.02; // Fine-tune hood angle
+        if (gamepad1.dpadRightWasPressed()) angle += 0.02;
         if (gamepad1.dpadLeftWasPressed()) angle -= 0.02;
 
         if (config.intakeMotor.isOverCurrent()) gamepad1.rumbleBlips(3);
 
-        if(gamepad1.rightBumperWasPressed()) {
-            follower.setPose(new Pose(125, 117, Math.toRadians(38)));
+        if (gamepad1.rightBumperWasPressed()) {
+            follower.setPose(new Pose(124, 120, Math.toRadians(36)));
             launchSystem.manualZeroTurret();
         }
 
         double currentDist = launchSystem.returnDistance(follower.getPose());
-        speedCalculator(currentDist);
-        marco.setPosition(angleCalculator(currentDist));
+        speedCalculator(currentDist,
+                follower.getVelocity().getXComponent(),
+                follower.getVelocity().getYComponent(),
+                follower.getPose(),
+                LaunchSystem.redGoalPose);
+        if (!launchSystem.isLaunching()) {
+            marco.setPosition(angleCalculator(currentDist));
+        }
 
         displayData();
     }
@@ -94,7 +100,7 @@ public class TeleRed extends OpMode {
 
                 if (gamepad1.yWasPressed()) {
                     state = State.LAUNCH;
-                    launchSystem.start(Tele.speed);
+                    launchSystem.start(speed);
                 }
                 break;
             case LAUNCH:
@@ -116,8 +122,8 @@ public class TeleRed extends OpMode {
 
         telemetry.addData("--- LOCALIZATION ---", "");
         telemetry.addData("Heading", "%.2f Deg", Math.toDegrees(follower.getPose().getHeading()));
-        telemetry.addData("x: ", follower.getPose().getX()) ;
-        telemetry.addData("y: ", follower.getPose().getY()) ;
+        telemetry.addData("x: ", follower.getPose().getX());
+        telemetry.addData("y: ", follower.getPose().getY());
 
         telemetry.addData("distance", launchSystem.returnDistance(follower.getPose()));
 
@@ -126,24 +132,36 @@ public class TeleRed extends OpMode {
         telemetry.addData("Velocity", "%.0f / %.0f", launchSystem.getVelocity(), speed);
 
         telemetry.addData("current: ", config.intakeMotor.getCurrent(CurrentUnit.AMPS));
+        telemetry.addData("testing: ", testing);
         telemetry.update();
     }
 
-    public static double angleCalculator(double x){
-        angle = -0.0000455931*x*x+0.0147313*x-0.442741;
+    public static double angleCalculator(double x) {
+        if (!testing)
+            angle = 0.00000190236*x*x*x-0.000602309*x*x+0.0657463*x-1.93061 +0.3;
         angle = Range.clip(angle, 0, 0.85);
         return angle;
     }
 
-    public static void speedCalculator(double x){
-        speed =-0.0441983*x*x+16.81366*x+859.41643;
-        LaunchSystem.idleVelocity = speed-Tele.speedDifference;
-        speed = Range.clip(speed, 1000, 2500);
 
+//    public static double speedDifference = 0;
+
+    public static void speedCalculator(double x, double robotVelX, double robotVelY, Pose robotPose, Pose goalPose) {
+        if (!testing)
+            speed = -0.0395022*x*x + 15.15043*x + 900.75758+200;
+
+        double dx = goalPose.getX() - robotPose.getX();
+        double dy = goalPose.getY() - robotPose.getY();
+        double dist = Math.hypot(dx, dy);
+        double velTowardGoal = (robotVelX * dx + robotVelY * dy) / dist;
+
+        speed -= velTowardGoal * speedVelocityGain;
+
+        LaunchSystem.idleVelocity = speed - speedDifference;
+        speed = Range.clip(speed, 1000, 2500);
     }
 
-
-    public Pose getPose(){
+    public Pose getPose() {
         return follower.getPose();
     }
 }

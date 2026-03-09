@@ -52,14 +52,14 @@ public class LaunchSystem {
 
     public static double recoilMult=0.014;
 
-    public static double BALL_HORIZONTAL_SPEED_IPS = 180.0;
+    public static double BALL_HORIZONTAL_SPEED_IPS = 200;
 
     private double estimateFlightTime(double distance) {
         return distance / BALL_HORIZONTAL_SPEED_IPS;
     }
 
     public static final Pose blueGoalPose = new Pose(0, 144);
-    public static final Pose redGoalPose = new Pose(144, 141);
+    public static final Pose redGoalPose = new Pose(144, 144);
     private Pose goalPose = blueGoalPose;
 
     public LaunchSystem(Configuration config, Pose pose) {
@@ -95,22 +95,31 @@ public class LaunchSystem {
         updatePIDF();
     }
 
-    public void updateTurret(Pose robotPose) {
+    public void updateTurret(Pose robotPose, double robotVelX, double robotVelY) {
         double currentDeg = getCurrentDeg();
         double targetDeg;
 
         if (trackingEnabled) {
-            double dx = goalPose.getX() - robotPose.getX();
-            double dy = goalPose.getY() - robotPose.getY();
+            double distance = returnDistance(robotPose);
+            double flightTime = estimateFlightTime(distance);
+
+            // Predict where the robot will BE when ball arrives
+            double futureX = robotPose.getX() + robotVelX * flightTime;
+            double futureY = robotPose.getY() + robotVelY * flightTime;
+
+
+            double dx = goalPose.getX() - futureX;
+            double dy = goalPose.getY() - futureY;
             double fieldAngle = Math.toDegrees(Math.atan2(dy, dx));
             double robotHeading = Math.toDegrees(robotPose.getHeading());
 
+
             double rawTarget = betterNormalize(fieldAngle - robotHeading);
 
-            if (rawTarget > 160) {
-                targetDeg = 160;
-            } else if (rawTarget < -65) {
-                targetDeg = -65;
+            if (rawTarget > 250) {
+                targetDeg = 250;
+            } else if (rawTarget < -110) {
+                targetDeg = -110;
             } else {
                 targetDeg = rawTarget;
             }
@@ -148,8 +157,8 @@ public class LaunchSystem {
     }
 
     private double betterNormalize(double degrees) {
-        while (degrees > 180) degrees -= 360;
-        while (degrees < -180) degrees += 360;
+        while (degrees > 250) degrees -= 360;
+        while (degrees < -110) degrees += 360;
         return degrees;
     }
 

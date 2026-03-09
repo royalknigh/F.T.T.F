@@ -64,7 +64,7 @@ public class Tele extends OpMode {
 
         // Update Turret and Shooting Logic
         stateMachine();
-        launchSystem.updateTurret(follower.getPose());
+        launchSystem.updateTurret(follower.getPose(), follower.getVelocity().getXComponent(), follower.getVelocity().getYComponent());
 
         // --- Nudge Controls (D-Pad Left/Right) ---
 
@@ -84,12 +84,16 @@ public class Tele extends OpMode {
         if (config.intakeMotor.isOverCurrent()) gamepad1.rumbleBlips(3);
 
         if(gamepad1.rightBumperWasPressed()) {
-            follower.setPose(new Pose(20, 122, Math.toRadians(144)));
+            follower.setPose(new Pose(19, 122, Math.toRadians(144)));
             launchSystem.manualZeroTurret();
         }
 
         double currentDist = launchSystem.returnDistance(follower.getPose());
-        speedCalculator(currentDist);
+        speedCalculator(currentDist,
+                follower.getVelocity().getXComponent(),
+                follower.getVelocity().getYComponent(),
+                follower.getPose(),
+                LaunchSystem.blueGoalPose);
         if (!launchSystem.isLaunching()) {
             marco.setPosition(angleCalculator(currentDist));
         }
@@ -157,17 +161,31 @@ public class Tele extends OpMode {
 
     public static double angleCalculator(double x){
         if(!testing)
-            angle = 0.00000190236*x*x*x-0.000602309*x*x+0.0657463*x-1.93061;
+            angle = -0.000075*x*x+0.01815*x-0.241667;
         angle = Range.clip(angle, 0, 0.85);
         return angle;
     }
 
+    public static double speedVelocityGain = 3; // tune this
+
     public static void speedCalculator(double x){
-        if(!testing)
-            speed = -0.0395022*x*x+15.15043*x+900.75758;
+        speed = -0.0395022*x*x + 15.15043*x + 900.75758+200;
+    }
+
+    public static void speedCalculator(double x, double robotVelX, double robotVelY, Pose robotPose, Pose goalPose) {
+        if (!testing)
+            speed = -0.04329*x*x+15.65801*x+1084.84848;
+
+        // Dot product: how much of robot velocity is toward/away from goal
+        double dx = goalPose.getX() - robotPose.getX();
+        double dy = goalPose.getY() - robotPose.getY();
+        double dist = Math.hypot(dx, dy);
+        double velTowardGoal = (robotVelX * dx + robotVelY * dy) / dist; // positive = moving toward
+
+        speed -= velTowardGoal * speedVelocityGain; // moving toward = reduce speed, away = increase
+
         LaunchSystem.idleVelocity = speed - speedDifference;
         speed = Range.clip(speed, 1000, 2500);
-
     }
 
     public static void recoilCalculator(double x){

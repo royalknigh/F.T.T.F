@@ -69,7 +69,8 @@ public class AutoBlueShortPlayoff extends OpMode {
     public void loop() {
         follower.update();
 
-        launchSystem.updateTurret(follower.getPose());
+        launchSystem.updateTurret(follower.getPose(), follower.getVelocity().getXComponent(), follower.getVelocity().getYComponent());
+
         double currentDist = launchSystem.returnDistance(follower.getPose());
         Tele.speedCalculator(currentDist);
         configuration.marco.setPosition(Tele.angleCalculator(currentDist) + 0.05);
