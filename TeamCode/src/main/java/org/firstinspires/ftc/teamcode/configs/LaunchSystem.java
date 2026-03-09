@@ -52,6 +52,12 @@ public class LaunchSystem {
 
     public static double recoilMult=0.014;
 
+    public static double BALL_HORIZONTAL_SPEED_IPS = 180.0;
+
+    private double estimateFlightTime(double distance) {
+        return distance / BALL_HORIZONTAL_SPEED_IPS;
+    }
+
     public static final Pose blueGoalPose = new Pose(0, 144);
     public static final Pose redGoalPose = new Pose(144, 141);
     private Pose goalPose = blueGoalPose;
