@@ -136,9 +136,9 @@ public class TeleRed extends OpMode {
         telemetry.update();
     }
 
-    public static double angleCalculator(double x) {
-        if (!testing)
-            angle = 0.00000190236*x*x*x-0.000602309*x*x+0.0657463*x-1.93061 +0.3;
+    public static double angleCalculator(double x){
+        if(!testing)
+            angle = -0.000075*x*x+0.01815*x-0.241667+0.02;
         angle = Range.clip(angle, 0, 0.85);
         return angle;
     }
@@ -148,14 +148,15 @@ public class TeleRed extends OpMode {
 
     public static void speedCalculator(double x, double robotVelX, double robotVelY, Pose robotPose, Pose goalPose) {
         if (!testing)
-            speed = -0.0395022*x*x + 15.15043*x + 900.75758+200;
+            speed = -0.0925325*x*x+24.25649*x+728.0303-50;
 
+        // Dot product: how much of robot velocity is toward/away from goal
         double dx = goalPose.getX() - robotPose.getX();
         double dy = goalPose.getY() - robotPose.getY();
         double dist = Math.hypot(dx, dy);
-        double velTowardGoal = (robotVelX * dx + robotVelY * dy) / dist;
+        double velTowardGoal = (robotVelX * dx + robotVelY * dy) / dist; // positive = moving toward
 
-        speed -= velTowardGoal * speedVelocityGain;
+        speed -= velTowardGoal * speedVelocityGain; // moving toward = reduce speed, away = increase
 
         LaunchSystem.idleVelocity = speed - speedDifference;
         speed = Range.clip(speed, 1000, 2500);

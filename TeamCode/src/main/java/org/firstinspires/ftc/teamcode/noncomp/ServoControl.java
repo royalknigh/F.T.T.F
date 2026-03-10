@@ -37,12 +37,12 @@ public class ServoControl extends LinearOpMode {
             position = Range.clip(position,0,0.85);
             position1= Range.clip(position1,0,0.85);
 
-            if(gamepad1.right_trigger>0.1) motor.setPower(gamepad1.right_trigger);
-            else motor.setPower(0);
+
 
             servo.setPosition(position);
             servo1.setPosition(position1);
             telemetry.addData("position", position);
+            telemetry.addData("position1", position1);
             telemetry.update();
         }
     }

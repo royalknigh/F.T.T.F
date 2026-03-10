@@ -28,7 +28,7 @@ public class AutoBlueShortPlayoff extends OpMode {
     private int pathState = 0;
 
     public static double gateX = 15, gateY = 67, gateHeading = 180;
-    public static double pickupX = 12, pickupY = 57, pickupHeading = 130;
+    public static double pickupX = 11, pickupY = 57, pickupHeading = 130;
 
     private final Pose startPose    = new Pose(34, 136, Math.toRadians(180));
     private final Pose scorePose    = new Pose(50, 86,    Math.toRadians(180));
@@ -73,7 +73,7 @@ public class AutoBlueShortPlayoff extends OpMode {
 
         double currentDist = launchSystem.returnDistance(follower.getPose());
         Tele.speedCalculator(currentDist);
-        configuration.marco.setPosition(Tele.angleCalculator(currentDist) + 0.05);
+        configuration.marco.setPosition(Tele.angleCalculator(currentDist)+0.02 );
 
         autonomousPathUpdate();
 
@@ -225,6 +225,7 @@ public class AutoBlueShortPlayoff extends OpMode {
         scorePreload = follower.pathBuilder()
                 .addPath(new BezierLine(startPose, scorePose))
                 .setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading())
+                .addParametricCallback(0, () -> launchSystem.adjustOffset(-3))
                 .addParametricCallback(0.8, () -> launch())
                 .build();
 
