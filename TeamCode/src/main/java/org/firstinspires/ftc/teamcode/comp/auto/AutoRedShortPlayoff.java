@@ -81,7 +81,7 @@ public class AutoRedShortPlayoff extends OpMode {
 
         double currentDist = launchSystem.returnDistance(follower.getPose());
         Tele.speedCalculator(currentDist);
-        configuration.marco.setPosition(Tele.angleCalculator(currentDist) + 0.05);
+        configuration.marco.setPosition(Tele.angleCalculator(currentDist) + 0.02);
 
         autonomousPathUpdate();
 

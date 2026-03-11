@@ -31,6 +31,9 @@ public class TeleRed extends OpMode {
 
     public static boolean testing = false;
 
+    public static double angleOffset =0;
+
+
     @Override
     public void init() {
         follower = Constants.createFollower(hardwareMap);
@@ -39,6 +42,7 @@ public class TeleRed extends OpMode {
         config = new Configuration(hardwareMap);
         launchSystem = new LaunchSystem(config, LaunchSystem.redGoalPose);
         this.marco = config.marco;
+        angleOffset =0;
     }
 
     @Override
@@ -66,8 +70,8 @@ public class TeleRed extends OpMode {
 
         if (gamepad1.dpadUpWasPressed()) speed += 50;
         if (gamepad1.dpadDownWasPressed()) speed -= 50;
-        if (gamepad1.dpadRightWasPressed()) angle += 0.02;
-        if (gamepad1.dpadLeftWasPressed()) angle -= 0.02;
+        if (gamepad1.dpadRightWasPressed()) angleOffset += 0.02;
+        if (gamepad1.dpadLeftWasPressed()) angleOffset -= 0.02;
 
         if (config.intakeMotor.isOverCurrent()) gamepad1.rumbleBlips(3);
 
@@ -96,7 +100,12 @@ public class TeleRed extends OpMode {
             case PIKCUP:
                 if (gamepad1.leftBumperWasPressed()) idle = !idle;
                 if (idle) launchSystem.idle(); else launchSystem.fullStop();
-                config.intakeMotor.setPower(gamepad1.left_trigger > 0.1 ? gamepad1.left_trigger : 0);
+                if(gamepad1.left_trigger>0.1)
+                    config.intakeMotor.setPower(gamepad1.left_trigger);
+                else if( gamepad1.right_trigger>0.2)
+                    config.intakeMotor.setPower(-gamepad1.right_trigger);
+                else
+                    config.intakeMotor.setPower(0);
 
                 if (gamepad1.yWasPressed()) {
                     state = State.LAUNCH;
@@ -138,7 +147,7 @@ public class TeleRed extends OpMode {
 
     public static double angleCalculator(double x){
         if(!testing)
-            angle = -0.000075*x*x+0.01815*x-0.241667+0.02;
+            angle = -0.000075*x*x+0.01815*x-0.241667+0.02 + angleOffset;
         angle = Range.clip(angle, 0, 0.85);
         return angle;
     }

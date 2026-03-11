@@ -12,6 +12,7 @@ import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.configs.Configuration;
 import org.firstinspires.ftc.teamcode.configs.LaunchSystem;
@@ -35,13 +36,9 @@ public class AutoRedLong extends OpMode {
 //    private boolean failsafe = false;
     private LaunchSystem launchSystem;
     private PathChain scorePreload, alignRow, pickupRow, score, pickupBottom, score2, bottomLineup, score3, leave;
-//    startPose -> score0 ( scorePreload )
-//    scorePreload -> lineup ( alignRow )
-//    lineup -> rowPickup ( pickupRow )
-//    rowPickup -> scorePose ( score )
-//    score1 -> bottomPickup ( pickupBottom )
-//    bottomPickup -> scorePose ( score2 )
-//    score2 -> gatePickup ( gateLineup )
+
+    private ElapsedTime launchTimer = new ElapsedTime();
+
     public void buildPaths() {
             scorePreload = follower.pathBuilder()
                     .addPath(new BezierLine(startPose, scorePose))
@@ -104,13 +101,16 @@ public class AutoRedLong extends OpMode {
                 follower.setMaxPower(1);
                 hasStartedLaunch=false;
                 setPathState(1); //1
+                launchTimer.reset();
+
+                launchSystem.start(Tele.speed);
+                hasStartedLaunch = true;
+                launchSystem.toggleTracking();
                 break;
             case 1:
-                if(!follower.isBusy()) {
+                if(!follower.isBusy()&& launchTimer.seconds()>2) {
                     if(!hasStartedLaunch) {
-                        launchSystem.start(Tele.speed);
-                        hasStartedLaunch = true;
-                        launchSystem.toggleTracking();
+
                     }
                     if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
                         follower.followPath(alignRow);

@@ -47,6 +47,7 @@ public class Tele extends OpMode {
         config = new Configuration(hardwareMap);
         launchSystem = new LaunchSystem(config, LaunchSystem.blueGoalPose);
         this.marco = config.marco;
+        angleOffset = 0;
     }
 
     @Override
@@ -78,8 +79,9 @@ public class Tele extends OpMode {
 
         if (gamepad1.dpadUpWasPressed()) speed += 50;      // Fine-tune speed
         if (gamepad1.dpadDownWasPressed()) speed -= 50;
-        if (gamepad1.dpadRightWasPressed()) angle += 0.02; // Fine-tune hood angle
-        if (gamepad1.dpadLeftWasPressed()) angle -= 0.02;
+
+        if (gamepad1.dpadRightWasPressed()) angleOffset += 0.02; // Fine-tune hood angle
+        if (gamepad1.dpadLeftWasPressed()) angleOffset -= 0.02;
 
         if (config.intakeMotor.isOverCurrent()) gamepad1.rumbleBlips(3);
 
@@ -116,8 +118,12 @@ public class Tele extends OpMode {
             case PIKCUP:
                 if (gamepad1.leftBumperWasPressed()) idle = !idle;
                 if (idle) launchSystem.idle(); else launchSystem.fullStop();
-                config.intakeMotor.setPower(gamepad1.left_trigger > 0.1 ? gamepad1.left_trigger : 0);
-
+                if(gamepad1.left_trigger>0.1)
+                    config.intakeMotor.setPower(gamepad1.left_trigger);
+                else if( gamepad1.right_trigger>0.2)
+                    config.intakeMotor.setPower(-gamepad1.right_trigger);
+                else
+                    config.intakeMotor.setPower(0);
 
                 if (gamepad1.yWasPressed()) {
                     state = State.LAUNCH;
@@ -159,9 +165,11 @@ public class Tele extends OpMode {
         telemetry.update();
     }
 
+    public static double angleOffset = 0;
+
     public static double angleCalculator(double x){
         if(!testing)
-            angle = -0.000075*x*x+0.01815*x-0.241667+0.02;
+            angle = -0.000075*x*x+0.01815*x-0.241667+0.02 +angleOffset;
         angle = Range.clip(angle, 0, 0.85);
         return angle;
     }
