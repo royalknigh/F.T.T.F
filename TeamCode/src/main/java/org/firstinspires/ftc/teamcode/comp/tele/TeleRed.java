@@ -37,7 +37,7 @@ public class TeleRed extends OpMode {
     @Override
     public void init() {
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(new Pose(8, 7, Math.toRadians(180)));
+        follower.setStartingPose(new Pose(87, 97, Math.toRadians(45)));
         follower.update();
         config = new Configuration(hardwareMap);
         launchSystem = new LaunchSystem(config, LaunchSystem.redGoalPose);
