@@ -18,8 +18,8 @@ import org.firstinspires.ftc.teamcode.configs.LaunchSystem;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.comp.tele.Tele;
 
-@Autonomous(name = "Auto Red Short playoff")
-public class AutoRedShortPlayoff extends OpMode {
+@Autonomous(name = "Auto Red Short playoff Natio")
+public class AutoRedShortPlayoffNatio extends OpMode {
 
     private Follower follower;
     private Timer pathTimer;
@@ -277,12 +277,12 @@ public class AutoRedShortPlayoff extends OpMode {
         scoreGate = follower.pathBuilder()
                 .addPath(new BezierCurve(pickupGate, new Pose(99, 65), scorePose))
                 .setLinearHeadingInterpolation(pickupGate.getHeading(), scorePose.getHeading())
-                .addParametricCallback(0.2, () -> configuration.intakeMotor.setPower(0))
+                .addParametricCallback(0.1, () -> configuration.intakeMotor.setPower(0))
                 .addParametricCallback(0.9, () -> launch())
                 .build();
         leave = follower.pathBuilder()
-                .addPath(new BezierCurve(pickupGate, new Pose(99, 65), scoreLeave))
-                .setLinearHeadingInterpolation(pickupGate.getHeading(), scoreLeave.getHeading())
+                .addPath(new BezierCurve(pickupGate, new Pose(99, 65), scorePose))
+                .setLinearHeadingInterpolation(pickupGate.getHeading(), scorePose.getHeading())
                 .addParametricCallback(0.2, () -> configuration.intakeMotor.setPower(0))
                 .addParametricCallback(0.7, () -> launch())
                 .build();

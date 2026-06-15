@@ -27,15 +27,16 @@ public class AutoRedLong extends OpMode {
     private int pathState = 0;
     private final Pose startPose = new Pose(89, 9, Math.toRadians(90));
     private final Pose scorePose = new Pose(83, 21, Math.toRadians(70));
-    private final Pose lineup = new Pose(95, 35.5, Math.toRadians(0));
+    private final Pose lineup = new Pose(132, 35.5, Math.toRadians(0));
     private final Pose pickupPose = new Pose(125, 35.5, Math.toRadians(0));
-    private final Pose bottomPose = new Pose(136, 9.5, Math.toRadians(0)); // x 135
-    private final Pose gatePickup = new Pose(135, 9, Math.toRadians(0));
+    private final Pose bottomPose = new Pose(135, 9.5, Math.toRadians(0)); // x 135
+    private final Pose gatePickup = new Pose(135, 20, Math.toRadians(0));
     private Configuration configuration;
     private boolean hasStartedLaunch = false;
 //    private boolean failsafe = false;
     private LaunchSystem launchSystem;
-    private PathChain scorePreload, alignRow, pickupRow, score, pickupBottom, score2, bottomLineup, score3, leave;
+    private PathChain scorePreload, alignRow, pickupRow, score, pickupBottom,
+            score2, bottomLineup, score3, leave, scoreLineup;
 
     private ElapsedTime launchTimer = new ElapsedTime();
 
@@ -47,6 +48,8 @@ public class AutoRedLong extends OpMode {
                     .build();
             alignRow = follower.pathBuilder()
                     .addPath(new BezierCurve(scorePose, new Pose(89, 34), lineup))
+                    .addParametricCallback(0.2, () -> configuration.intakeMotor.setPower(1))
+
                     .setTangentHeadingInterpolation()
                     .build();
 //            pickupRow = follower.pathBuilder()
@@ -56,35 +59,40 @@ public class AutoRedLong extends OpMode {
             score = follower.pathBuilder()
                     .addPath(new BezierLine(pickupPose, scorePose))
                     // .addParametricCallback(0.9, () -> launchSystem.start(LaunchSystem.highVelocity, interval))
-                    .setLinearHeadingInterpolation(pickupPose.getHeading(), scorePose.getHeading())
+                    .setConstantHeadingInterpolation(pickupPose.getHeading())
                     .build();
+        scoreLineup = follower.pathBuilder()
+                .addPath(new BezierLine(lineup, scorePose))
+                // .addParametricCallback(0.9, () -> launchSystem.start(LaunchSystem.highVelocity, interval))
+                .setConstantHeadingInterpolation(lineup.getHeading())
+                .build();
             pickupBottom = follower.pathBuilder()
-                    .addPath(new BezierCurve(scorePose, new Pose(133,  59.5), bottomPose)) //116, 41
+                    .addPath(new BezierLine(scorePose, bottomPose)) //116, 41
                     .addParametricCallback(0.65, () -> follower.setMaxPower(0.75))
 //                    .addTemporalCallback(2000, () -> {
 //                        failsafe = true;
 //                    })
-                    .setTangentHeadingInterpolation()
+                    .setConstantHeadingInterpolation(Math.toRadians(0))
                     .build();
 
             score2 = follower.pathBuilder()
                     .addPath(new BezierCurve(bottomPose, new Pose(111,  27), scorePose))
                     .addParametricCallback(0.6, () -> configuration.intakeMotor.setPower(0))
 //                    .addParametricCallback(0.5, () -> launchSystem.start(LaunchSystem.highVelocity, interval))
-                    .setLinearHeadingInterpolation(bottomPose.getHeading(), scorePose.getHeading())
+                    .setConstantHeadingInterpolation(bottomPose.getHeading())
                     .build();
             bottomLineup = follower.pathBuilder()
                     .addPath(new BezierCurve(scorePose, new Pose(116,  19), gatePickup))
 //                    .addTemporalCallback(2000, () ->{
 //                        failsafe = true;
 //                    })
-                    .setTangentHeadingInterpolation()
+                    .setConstantHeadingInterpolation(bottomPose.getHeading())
                     .build();
             score3 = follower.pathBuilder()
                 .addPath(new BezierCurve(gatePickup, new Pose(111,  25), scorePose))
                 .addParametricCallback(0.6, () -> configuration.intakeMotor.setPower(0))
 //                    .addParametricCallback(0.5, () -> launchSystem.start(LaunchSystem.highVelocity, interval))
-                .setLinearHeadingInterpolation(gatePickup.getHeading(), scorePose.getHeading())
+                .setConstantHeadingInterpolation(gatePickup.getHeading())
                 .build();
             leave = follower.pathBuilder()
                 .addPath(new BezierLine(scorePose, new Pose(110, 25)))
@@ -108,7 +116,7 @@ public class AutoRedLong extends OpMode {
                 launchSystem.toggleTracking();
                 break;
             case 1:
-                if(!follower.isBusy()&& launchTimer.seconds()>2) {
+                if(!follower.isBusy()&& launchTimer.seconds()>1.5) {
                     if(!hasStartedLaunch) {
 
                     }
@@ -122,22 +130,22 @@ public class AutoRedLong extends OpMode {
                 break;
             case 2:
                 if (!follower.isBusy()) {
-                    follower.followPath(score);
+                    follower.followPath(scoreLineup);
                     configuration.intakeMotor.setPower(0);
                     follower.setMaxPower(1);
                     hasStartedLaunch=false;
+                    launchSystem.toggleTracking();
                     setPathState(3);
                 }
                 break;
             case 3:
                 if(!follower.isBusy()) {
                     if(!launchSystem.isLaunching() && !hasStartedLaunch) {
-                        launchSystem.toggleTracking();
                         launchSystem.start(Tele.speed);
                         hasStartedLaunch = true;
                     }
                     if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
-                        follower.setMaxPower(0.8);
+                        follower.setMaxPower(1);
                         follower.followPath(pickupBottom);
                         configuration.intakeMotor.setPower(1);
                         hasStartedLaunch = false;
@@ -150,19 +158,20 @@ public class AutoRedLong extends OpMode {
                 if (!follower.isBusy()) {
                     follower.setMaxPower(1);
                     follower.followPath(score2);
-                    setPathState(6);
+                    launchSystem.toggleTracking();
+                    setPathState(5);
                 }
             case 5:
                 if(!follower.isBusy()) {
                     if(!launchSystem.isLaunching() && !hasStartedLaunch) {
-                        launchSystem.toggleTracking();
+
                         launchSystem.start(Tele.speed);
                         hasStartedLaunch = true;
                     }
                     if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
                         follower.followPath(bottomLineup);
                         hasStartedLaunch = false;
-                        configuration.intakeMotor.setPower(0.8);
+                        configuration.intakeMotor.setPower(1);
                         launchSystem.toggleTracking();
                         follower.setMaxPower(1);
                         setPathState(6);
@@ -172,20 +181,21 @@ public class AutoRedLong extends OpMode {
             case 6:
                 if (!follower.isBusy()) {
                     follower.followPath(score3);
+                    launchSystem.toggleTracking();
                     setPathState(7);
                 }
                 break;
             case 7:
                 if(!follower.isBusy()) {
                     if(!launchSystem.isLaunching() && !hasStartedLaunch) {
-                        launchSystem.toggleTracking();
+
                         launchSystem.start(Tele.speed);
                         hasStartedLaunch = true;
                     }
                     if(launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
-                        follower.followPath(bottomLineup);
+                        follower.followPath(pickupBottom);
                         hasStartedLaunch = false;
-                        configuration.intakeMotor.setPower(0.8);
+                        configuration.intakeMotor.setPower(1);
                         launchSystem.toggleTracking();
                         setPathState(8);
                     }
@@ -194,13 +204,14 @@ public class AutoRedLong extends OpMode {
             case 8:
                 if (!follower.isBusy()) {
                     follower.followPath(score3);
+                    launchSystem.toggleTracking();
                     setPathState(9);
                 }
                 break;
             case 9:
                 if(!follower.isBusy()) {
                     if(!launchSystem.isLaunching() && !hasStartedLaunch) {
-                        launchSystem.toggleTracking();
+
                         launchSystem.start(Tele.speed);
                         hasStartedLaunch = true;
                     }
@@ -208,7 +219,7 @@ public class AutoRedLong extends OpMode {
                         follower.followPath(leave);
                         hasStartedLaunch = false;
                         configuration.intakeMotor.setPower(0);
-                        launchSystem.toggleTracking();
+//                        launchSystem.toggleTracking();
                         setPathState(-1);
                     }
                 }

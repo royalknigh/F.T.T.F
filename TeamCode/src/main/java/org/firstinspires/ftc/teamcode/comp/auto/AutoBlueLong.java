@@ -18,7 +18,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.comp.tele.Tele;
 
 @Configurable
-@Autonomous(name = "Auto Red Long")
+@Autonomous(name = "Auto Blue Long")
 public class AutoBlueLong extends OpMode {
 
     private Follower follower;
@@ -27,12 +27,17 @@ public class AutoBlueLong extends OpMode {
 
     // All x values mirrored: x_red = 144 - x_blue
     // All headings mirrored: heading_red = 180° - heading_blue
-    private final Pose startPose   = new Pose(89,  9,    Math.toRadians(90));   // blue: (55,  9,    90°)
-    private final Pose scorePose   = new Pose(83,  21,   Math.toRadians(70));   // blue: (61,  21,  110°)
-    private final Pose pickupPose  = new Pose(129, 35.5, Math.toRadians(0));    // blue: (15,  35.5, 180°)
-    private final Pose bottomPose  = new Pose(136, 9.5,  Math.toRadians(0));    // blue: (8,   9.5,  180°)
-    private final Pose gatePickup  = new Pose(135, 9,    Math.toRadians(0));    // blue: (9,   9,    180°)
-    private final Pose gatePickup2 = new Pose(135, 12,   Math.toRadians(0));    // blue: (9,   12,   180°)
+    private final Pose startPose = new Pose(55, 10, Math.toRadians(90));
+    private final Pose scorePose = new Pose(60, 22, Math.toRadians(110));
+    private final Pose lineup = new Pose(49, 35, Math.toRadians(180));
+    private final Pose pickupPose = new Pose(12, 35, Math.toRadians(180));
+    private final Pose bottomPose = new Pose(10, 10, Math.toRadians(180));
+    private final Pose gatePickup = new Pose(10, 17, Math.toRadians(90));
+    private final Pose gatePickup2 = new Pose(10, 12, Math.toRadians(90));
+
+    private final Pose park = new Pose(40,30, Math.toRadians(110));
+
+
 
     private Configuration configuration;
     private LaunchSystem launchSystem;
@@ -54,65 +59,64 @@ public class AutoBlueLong extends OpMode {
 
         // Control point: x = 144 - 55 = 89
         alignRow = follower.pathBuilder()
-                .addPath(new BezierCurve(scorePose, new Pose(89, 34), pickupPose))
+                .addPath(new BezierCurve(scorePose, new Pose(40, 34), pickupPose))
                 .setTangentHeadingInterpolation()
                 .addParametricCallback(0.2, () -> configuration.intakeMotor.setPower(1))
                 .build();
 
         score = follower.pathBuilder()
                 .addPath(new BezierLine(pickupPose, scorePose))
-                .setLinearHeadingInterpolation(pickupPose.getHeading(), scorePose.getHeading())
-                .addParametricCallback(0.4, () -> configuration.intakeMotor.setPower(0))
+                .setConstantHeadingInterpolation(pickupPose.getHeading())
+                .addParametricCallback(0.2, () -> configuration.intakeMotor.setPower(0))
                 .addParametricCallback(0.9, () -> launch())
                 .build();
 
-        // Control point: x = 144 - 11 = 133
+
         pickupBottom = follower.pathBuilder()
-                .addPath(new BezierCurve(scorePose, new Pose(133, 59.5), bottomPose))
+                .addPath(new BezierLine(scorePose, bottomPose))
                 .addParametricCallback(0.65, () -> follower.setMaxPower(0.75))
                 .addParametricCallback(0.2, () -> configuration.intakeMotor.setPower(1))
-                .setTangentHeadingInterpolation()
+                .setConstantHeadingInterpolation(bottomPose.getHeading())
                 .build();
 
-        // Control point: x = 144 - 33 = 111
         score2 = follower.pathBuilder()
-                .addPath(new BezierCurve(bottomPose, new Pose(111, 27), scorePose))
-                .addParametricCallback(0.6, () -> configuration.intakeMotor.setPower(0))
+                .addPath(new BezierLine(bottomPose, scorePose))
+                .addParametricCallback(0.2, () -> configuration.intakeMotor.setPower(0))
                 .addParametricCallback(0.9, () -> launch())
-                .setLinearHeadingInterpolation(bottomPose.getHeading(), scorePose.getHeading())
+                .setConstantHeadingInterpolation(bottomPose.getHeading())
                 .build();
 
-        // Control point: x = 144 - 28 = 116
         bottomLineup = follower.pathBuilder()
-                .addPath(new BezierCurve(scorePose, new Pose(116, 19), gatePickup))
-                .setTangentHeadingInterpolation()
+                .addPath(new BezierLine(scorePose, gatePickup))
+                .addParametricCallback(0.3, () -> configuration.intakeMotor.setPower(1))
+                .setConstantHeadingInterpolation(bottomPose.getHeading())
                 .build();
 
         bottomLineup2 = follower.pathBuilder()
-                .addPath(new BezierCurve(scorePose, new Pose(116, 19), gatePickup2))
-                .setTangentHeadingInterpolation()
+                .addPath(new BezierLine(scorePose, gatePickup2))
+                .setConstantHeadingInterpolation(bottomPose.getHeading())
+                .addParametricCallback(0.3, () -> configuration.intakeMotor.setPower(1))
                 .build();
 
-        // Control point: x = 144 - 33 = 111
+
         score3 = follower.pathBuilder()
-                .addPath(new BezierCurve(gatePickup, new Pose(111, 25), scorePose))
-                .addParametricCallback(0.6, () -> configuration.intakeMotor.setPower(0))
+                .addPath(new BezierLine(gatePickup, scorePose))
+                .addParametricCallback(0.3, () -> configuration.intakeMotor.setPower(0))
                 .addParametricCallback(0.9, () -> launch())
-                .setLinearHeadingInterpolation(gatePickup.getHeading(), scorePose.getHeading())
+                .setConstantHeadingInterpolation(bottomPose.getHeading())
                 .build();
 
         score4 = follower.pathBuilder()
-                .addPath(new BezierCurve(gatePickup2, new Pose(111, 25), scorePose))
-                .addParametricCallback(0.6, () -> configuration.intakeMotor.setPower(0))
+                .addPath(new BezierLine(gatePickup2, scorePose))
+                .addParametricCallback(0.3, () -> configuration.intakeMotor.setPower(0))
                 .addParametricCallback(0.9, () -> launch())
-                .setLinearHeadingInterpolation(gatePickup2.getHeading(), scorePose.getHeading())
+                .setConstantHeadingInterpolation(bottomPose.getHeading())
                 .build();
 
-        // Endpoint: x = 144 - 34 = 110
         leave = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose, new Pose(110, 25)))
-                .addParametricCallback(0.6, () -> configuration.intakeMotor.setPower(0))
-                .setConstantHeadingInterpolation(scorePose.getHeading())
+                .addPath(new BezierLine(scorePose, park))
+                .addParametricCallback(0.1, () -> configuration.intakeMotor.setPower(0))
+                .setConstantHeadingInterpolation(park.getHeading())
                 .build();
     }
 
@@ -203,7 +207,7 @@ public class AutoBlueLong extends OpMode {
             case 9: // Wait for second gate-ball launch, then leave
                 if (!follower.isBusy()) {
                     if (launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
-                        launchSystem.toggleTracking();
+//                        launchSystem.toggleTracking();
                         configuration.intakeMotor.setPower(0);
                         follower.followPath(leave);
                         setPathState(-1);
@@ -224,7 +228,7 @@ public class AutoBlueLong extends OpMode {
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(startPose);
         configuration = new Configuration(hardwareMap);
-        launchSystem = new LaunchSystem(configuration, LaunchSystem.redGoalPose);
+        launchSystem = new LaunchSystem(configuration, LaunchSystem.blueGoalPose);
         configuration.stopper.setPosition(holdBall);
         buildPaths();
     }
@@ -250,6 +254,7 @@ public class AutoBlueLong extends OpMode {
         telemetry.addData("Path State", pathState);
         telemetry.addData("Velo", "%.0f / %.0f", launchSystem.getVelocity(), Tele.speed);
         telemetry.addData("Distance: ", currentDist);
+        telemetry.addData("Velocity", "%.0f", launchSystem.getVelocity());
         telemetry.update();
     }
 

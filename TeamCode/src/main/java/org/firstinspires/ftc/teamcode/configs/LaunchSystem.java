@@ -19,12 +19,12 @@ public class LaunchSystem {
     private ElapsedTime launchTimer = new ElapsedTime();
     private ElapsedTime turretTimer = new ElapsedTime();
 
-    public static double currentTargetVelocity, idleVelocity = 1300;
+    public static double currentTargetVelocity, idleVelocity = 1500;
 
     // PERSISTENCE: Saved from Auto.stop()
     public static double lastSavedPosition = 0;
 
-    public static double holdBall = 0.6, middleBall = 0.69, passBall = 0.85;
+    public static double holdBall = 0.37, middleBall = 0.69, passBall = 0.62;
 
     // --- PID Constants ---
     public static double turretP = 0.017;
@@ -215,7 +215,7 @@ public class LaunchSystem {
             if (launchTimer.milliseconds() > 50) {     //was 100x
                 stopper.setPosition(passBall);
                 if (distance <= 90) {
-                    im.setPower(0.8);
+                    im.setPower(0.7);
                     recoilMult = 0.014;
                 }
                 if (distance <= 120 && distance >90) {
@@ -262,7 +262,7 @@ public class LaunchSystem {
 
         return false;
     }
-    public static double velocityDifference = 76;
+    public static double velocityDifference = 60;
     public void fullStop() { isLaunching = false; lm1.setVelocity(0); lm2.setVelocity(0); }
     public double getVelocity() { return (lm1.getVelocity() + lm2.getVelocity()) / 2.0; }
     public double returnDistance(Pose robotPose){

@@ -41,7 +41,7 @@ public class AutoBlueShortPlayoff extends OpMode {
     public static final Pose openGatePose   = new Pose(gateX, gateY, Math.toRadians(gateHeading));
 
     private final Pose pickupGate = new Pose(pickupX, pickupY,  Math.toRadians(pickupHeading));
-    private final Pose scoreLeave = new Pose(58, 95,  Math.toRadians(135));
+    private final Pose scoreLeave = new Pose(57, 98,  Math.toRadians(135));
 
     private Configuration configuration;
     private LaunchSystem launchSystem;
@@ -73,7 +73,7 @@ public class AutoBlueShortPlayoff extends OpMode {
 
         double currentDist = launchSystem.returnDistance(follower.getPose());
         Tele.speedCalculator(currentDist);
-        configuration.marco.setPosition(Tele.angleCalculator(currentDist)+0.02 );
+        configuration.marco.setPosition(Tele.angleCalculator(currentDist) );
 
         autonomousPathUpdate();
 
