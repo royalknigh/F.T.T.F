@@ -19,7 +19,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.comp.tele.Tele;
 
 @Configurable
-@Autonomous(name = "Auto Blue Short playoff Spark")
+@Autonomous(name = "Auto Blue Short playoff Spark / FRI")
 public class AutoBlueShortPlayoffSpark extends OpMode {
 
     private Follower follower;
@@ -123,7 +123,7 @@ public class AutoBlueShortPlayoffSpark extends OpMode {
                 break;
 
             case 3: // Wait for gate to open, then collect
-                if (!follower.isBusy() && gateTimer.seconds() > 2.2) {
+                if (!follower.isBusy() && gateTimer.seconds() > 1.8) {
                     follower.followPath(gateCollect);
                     gateTimer.reset();
                     setPathState(4);
@@ -131,7 +131,7 @@ public class AutoBlueShortPlayoffSpark extends OpMode {
                 break;
 
             case 4: // Wait for collection, then return to score (callback fires launch)
-                if (!follower.isBusy() && gateTimer.seconds() > 1.5) {
+                if (!follower.isBusy() && gateTimer.seconds() > 1.8) {
                     follower.followPath(scoreGate);
                     setPathState(7);
                 }
@@ -150,7 +150,7 @@ public class AutoBlueShortPlayoffSpark extends OpMode {
                 break;
 
             case 8: // Wait for gate, then collect
-                if (!follower.isBusy() && gateTimer.seconds() > 2) {
+                if (!follower.isBusy() && gateTimer.seconds() > 1.8) {
                     follower.followPath(gateCollect);
                     gateTimer.reset();
                     setPathState(9);
@@ -158,7 +158,7 @@ public class AutoBlueShortPlayoffSpark extends OpMode {
                 break;
 
             case 9: // Wait for collection, then return to score (callback fires launch)
-                if (!follower.isBusy() && gateTimer.seconds() > 1.5) {
+                if (!follower.isBusy() && gateTimer.seconds() > 1.8) {
                     follower.followPath(scoreGate);
                     setPathState(10);
                 }
@@ -175,7 +175,7 @@ public class AutoBlueShortPlayoffSpark extends OpMode {
                 break;
 
             case 11: // Wait for gate, then collect
-                if (!follower.isBusy() && gateTimer.seconds() > 2) {
+                if (!follower.isBusy() && gateTimer.seconds() > 1.8) {
                     follower.followPath(gateCollect);
                     gateTimer.reset();
                     setPathState(12);
@@ -183,7 +183,7 @@ public class AutoBlueShortPlayoffSpark extends OpMode {
                 break;
 
             case 12: // Wait for collection, then return to score (callback fires launch)
-                if (!follower.isBusy() && gateTimer.seconds() > 1.5) {
+                if (!follower.isBusy() && gateTimer.seconds() > 1.8) {
                     follower.followPath(scoreGate);
                     setPathState(13);
                 }

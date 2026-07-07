@@ -157,8 +157,8 @@ public class LaunchSystem {
     }
 
     private double betterNormalize(double degrees) {
-        while (degrees > 250) degrees -= 360;
-        while (degrees < -110) degrees += 360;
+        while (degrees > 230) degrees -= 360;
+        while (degrees < -130) degrees += 360;
         return degrees;
     }
 

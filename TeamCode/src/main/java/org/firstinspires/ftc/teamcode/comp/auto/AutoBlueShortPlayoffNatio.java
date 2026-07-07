@@ -41,7 +41,7 @@ public class AutoBlueShortPlayoffNatio extends OpMode {
     public static final Pose openGatePose   = new Pose(gateX, gateY, Math.toRadians(gateHeading));
 
     private final Pose pickupGate = new Pose(pickupX, pickupY,  Math.toRadians(pickupHeading));
-    private final Pose scoreLeave = new Pose(57, 98,  Math.toRadians(135));
+    private final Pose scoreLeave = new Pose(55, 100,  Math.toRadians(148));
 
     private Configuration configuration;
     private LaunchSystem launchSystem;
@@ -123,7 +123,7 @@ public class AutoBlueShortPlayoffNatio extends OpMode {
                 break;
 
             case 3: // Wait for gate to open, then collect
-                if (!follower.isBusy() && gateTimer.seconds() > 1.8) {
+                if (!follower.isBusy() && gateTimer.seconds() > 1.6) {
                     follower.followPath(gateCollect);
                     gateTimer.reset();
                     setPathState(4);
@@ -133,7 +133,7 @@ public class AutoBlueShortPlayoffNatio extends OpMode {
             case 4: // Wait for collection, then return to score (callback fires launch)
                 if (!follower.isBusy() && gateTimer.seconds() > 1.8) {
                     follower.followPath(scoreGate);
-                    setPathState(5);
+                    setPathState(7);
                 }
                 break;
 
@@ -142,7 +142,7 @@ public class AutoBlueShortPlayoffNatio extends OpMode {
                     if (launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
                         launchSystem.toggleTracking();
                         follower.followPath(firstRow);
-                        setPathState(7);
+                        setPathState(13);
                     }
                 }
                 break;
@@ -159,7 +159,7 @@ public class AutoBlueShortPlayoffNatio extends OpMode {
                 break;
 
             case 8: // Wait for gate, then collect
-                if (!follower.isBusy() && gateTimer.seconds() > 1.8) {
+                if (!follower.isBusy() && gateTimer.seconds() > 1.6) {
                     follower.followPath(gateCollect);
                     gateTimer.reset();
                     setPathState(9);
@@ -184,7 +184,7 @@ public class AutoBlueShortPlayoffNatio extends OpMode {
                 break;
 
             case 11: // Wait for gate, then collect
-                if (!follower.isBusy() && gateTimer.seconds() > 1.8) {
+                if (!follower.isBusy() && gateTimer.seconds() > 1.6) {
                     follower.followPath(gateCollect);
                     gateTimer.reset();
                     setPathState(12);
@@ -194,7 +194,7 @@ public class AutoBlueShortPlayoffNatio extends OpMode {
             case 12: // Wait for collection, then return to score (callback fires launch)
                 if (!follower.isBusy() && gateTimer.seconds() > 1.8) {
                     follower.followPath(scoreGate);
-                    setPathState(13);
+                    setPathState(5);
                 }
                 break;
 
@@ -247,8 +247,8 @@ public class AutoBlueShortPlayoffNatio extends OpMode {
                 .setConstantHeadingInterpolation(scorePose.getHeading())
                 .addParametricCallback(0, () -> configuration.intakeMotor.setPower(1))
 
-                .addPath(new BezierLine(pickup1Pose, scorePose))
-                .setLinearHeadingInterpolation(pickup1Pose.getHeading(), scorePose.getHeading())
+                .addPath(new BezierLine(pickup1Pose, scoreLeave))
+                .setLinearHeadingInterpolation(pickup1Pose.getHeading(), scoreLeave.getHeading())
                 .addParametricCallback(0.5, () -> configuration.intakeMotor.setPower(0))
                 .addParametricCallback(0.7, () -> launch())
                 .build();
