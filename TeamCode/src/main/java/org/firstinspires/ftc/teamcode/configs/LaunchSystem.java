@@ -60,6 +60,7 @@ public class LaunchSystem {
 
     public static final Pose blueGoalPose = new Pose(0, 144);
     public static final Pose redGoalPose = new Pose(144, 144);
+    public static final Pose purpleGoalPose = new Pose(70.7,(-131)); // First Robotics Initiative - FRI Cybermoon
     private Pose goalPose = blueGoalPose;
 
     public LaunchSystem(Configuration config, Pose pose) {
@@ -93,6 +94,10 @@ public class LaunchSystem {
 //        this.turretOffsetDeg = lastSavedPosition;
 
         updatePIDF();
+    }
+
+    public void setGoalPose(Pose goalPose) {
+        this.goalPose = goalPose;
     }
 
     public void updateTurret(Pose robotPose, double robotVelX, double robotVelY) {
