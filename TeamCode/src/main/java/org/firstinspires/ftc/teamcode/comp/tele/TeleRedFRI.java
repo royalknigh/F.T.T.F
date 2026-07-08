@@ -84,7 +84,7 @@ public class TeleRedFRI extends OpMode {
             launchSystem.manualZeroTurret();
         }
         if(gamepad2.rightBumperWasPressed()) {
-            follower.setPose(new Pose(19, 122, Math.toRadians(144))); // de schimbat, pozitie noua cos mov
+            follower.setPose(new Pose(19, -122, Math.toRadians(144))); // de schimbat, pozitie noua cos mov
             launchSystem.manualZeroTurret();
         }
 

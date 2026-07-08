@@ -54,28 +54,28 @@ public class TeleBlueFRI extends OpMode {
     public void start(){
         follower.startTeleOpDrive();
     }
-
     @Override
     public void loop() {
-            if(gamepad1.touchpadWasPressed() || gamepad2.touchpadWasPressed())
-                blue=!blue;
-            if(blue)
-                launchSystem.setGoalPose(LaunchSystem.blueGoalPose);
-            else launchSystem.setGoalPose(LaunchSystem.purpleGoalPose);
+        if(gamepad1.touchpadWasPressed())
+            blue=!blue;
+        if(blue){
+            gamepad1.setLedColor(0,0,255,120000);
+            launchSystem.setGoalPose(LaunchSystem.blueGoalPose);
+        }
+        else {
+            gamepad1.setLedColor(255,0,255,120000);
+            launchSystem.setGoalPose(LaunchSystem.bluepurpleGoalPose);
+        }
 
-        if ((gamepad1.bWasPressed() && !gamepad1.options) || (gamepad2.bWasPressed() && !gamepad2.options)){
+        if (gamepad1.bWasPressed()){
             launchSystem.adjustOffset(4);
         }
 
         follower.update();
         // Only one controller drives at a time, so it's safe to sum both gamepads' stick values
-        follower.setTeleOpDrive(
-                -(gamepad1.left_stick_y + gamepad2.left_stick_y),
-                -(gamepad1.left_stick_x + gamepad2.left_stick_x),
-                -(gamepad1.right_stick_x + gamepad2.right_stick_x) * 0.5,
-                true);
+        follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x * 0.5, true);
 
-        if(gamepad1.shareWasPressed() || gamepad2.shareWasPressed())
+        if(gamepad1.shareWasPressed())
             testing = !testing;
 
         // Update Turret and Shooting Logic
@@ -84,44 +84,46 @@ public class TeleBlueFRI extends OpMode {
 
         // --- Nudge Controls (D-Pad Left/Right) ---
 
-        if (gamepad1.xWasPressed() || gamepad2.xWasPressed()) {
+        if (gamepad1.xWasPressed()) {
             launchSystem.adjustOffset(-4);
         }
 
-        if (gamepad1.dpadUpWasPressed() || gamepad2.dpadUpWasPressed()) speed += 50;      // Fine-tune speed
-        if (gamepad1.dpadDownWasPressed() || gamepad2.dpadDownWasPressed()) speed -= 50;
+        if (gamepad1.dpadUpWasPressed()) speed += 50;      // Fine-tune speed
+        if (gamepad1.dpadDownWasPressed()) speed -= 50;
 
-        if (gamepad1.dpadRightWasPressed() || gamepad2.dpadRightWasPressed()) angleOffset += 0.02; // Fine-tune hood angle
-        if (gamepad1.dpadLeftWasPressed() || gamepad2.dpadLeftWasPressed()) angleOffset -= 0.02;
+        if (gamepad1.dpadRightWasPressed()) angleOffset += 0.02; // Fine-tune hood angle
+        if (gamepad1.dpadLeftWasPressed()) angleOffset -= 0.02;
 
         if (config.intakeMotor.isOverCurrent()) {
             gamepad1.rumbleBlips(3);
-            gamepad2.rumbleBlips(3);
         }
-        if(gamepad1.rightBumperWasPressed()){
-            follower.setPose(new Pose(19, 122, Math.toRadians(144)));
-            launchSystem.manualZeroTurret();
-        }
-        if(gamepad2.rightBumperWasPressed()) {
-            follower.setPose(new Pose(11.8, (-131.3), Math.toRadians(180))); // de schimbat, pozitie noua cos mov -131.7
-            launchSystem.manualZeroTurret();
+        if(gamepad1.rightBumperWasPressed()) {
+            if(blue){
+                follower.setPose(new Pose(12, 12, Math.toRadians(180)));
+                launchSystem.manualZeroTurret();
+            }
+            else{
+                follower.setPose(new Pose(11.8, -(131.3), Math.toRadians(180))); // de schimbat, pozitie noua cos mov -131.7
+
+                launchSystem.manualZeroTurret();
+            }
         }
 
 
         double currentDist = launchSystem.returnDistance(follower.getPose());
         if(blue){
-        speedCalculator(currentDist,
-                follower.getVelocity().getXComponent(),
-                follower.getVelocity().getYComponent(),
-                follower.getPose(),
-                LaunchSystem.blueGoalPose);
+            speedCalculator(currentDist,
+                    follower.getVelocity().getXComponent(),
+                    follower.getVelocity().getYComponent(),
+                    follower.getPose(),
+                    LaunchSystem.blueGoalPose);
         }
         else{
             speedCalculator(currentDist,
                     follower.getVelocity().getXComponent(),
                     follower.getVelocity().getYComponent(),
                     follower.getPose(),
-                    LaunchSystem.purpleGoalPose); // de modificat in purple goal pose
+                    LaunchSystem.bluepurpleGoalPose); // de modificat in purple goal pose
         }
         if (!launchSystem.isLaunching()) {
             marco.setPosition(angleCalculator(currentDist));
@@ -135,7 +137,7 @@ public class TeleBlueFRI extends OpMode {
     }
 
     public void stateMachine() {
-        if ((gamepad1.aWasPressed() && !gamepad1.optionsWasPressed()) || (gamepad2.aWasPressed() && !gamepad2.optionsWasPressed()))
+        if (gamepad1.aWasPressed())
             launchSystem.toggleTracking();
 //        if (gamepad1.xWasPressed()) launchSystem.startReset();
 
@@ -144,16 +146,16 @@ public class TeleBlueFRI extends OpMode {
 
         switch (state) {
             case PIKCUP:
-                if (gamepad1.leftBumperWasPressed() || gamepad2.leftBumperWasPressed()) idle = !idle;
+                if (gamepad1.leftBumperWasPressed()) idle = !idle;
                 if (idle) launchSystem.idle(); else launchSystem.fullStop();
-                if(gamepad1.left_trigger>0.1 || gamepad2.left_trigger>0.1)
-                    config.intakeMotor.setPower(gamepad1.left_trigger+gamepad2.left_trigger);
-                else if( gamepad1.right_trigger>0.2 || gamepad2.right_trigger>0.2)
-                    config.intakeMotor.setPower(-gamepad1.right_trigger-gamepad2.right_trigger);
+                if(gamepad1.left_trigger>0.1)
+                    config.intakeMotor.setPower(gamepad1.left_trigger);
+                else if( gamepad1.right_trigger>0.2)
+                    config.intakeMotor.setPower(-gamepad1.right_trigger);
                 else
                     config.intakeMotor.setPower(0);
 
-                if (gamepad1.yWasPressed() || gamepad2.yWasPressed()) {
+                if (gamepad1.yWasPressed()) {
                     state = State.LAUNCH;
                     launchSystem.start(speed);
                 }
@@ -162,7 +164,7 @@ public class TeleBlueFRI extends OpMode {
                 if (launchSystem.update(launchSystem.returnDistance(follower.getPose()), speed)) {
                     state = State.PIKCUP;
                     gamepad1.rumbleBlips(3);
-                    gamepad2.rumbleBlips(3);
+
                 }
                 break;
         }
