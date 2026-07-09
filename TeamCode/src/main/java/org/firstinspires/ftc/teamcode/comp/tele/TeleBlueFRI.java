@@ -46,8 +46,25 @@ public class TeleBlueFRI extends OpMode {
         follower.update();
         config = new Configuration(hardwareMap);
         launchSystem = new LaunchSystem(config, LaunchSystem.blueGoalPose);
+
         this.marco = config.marco;
         angleOffset = 0;
+    }
+    @Override
+    public void init_loop(){
+        if(gamepad1.touchpadWasPressed()){
+            blue=!blue;
+            if(blue){
+                launchSystem = new LaunchSystem(config, LaunchSystem.blueGoalPose);
+                gamepad1.setLedColor(0,0,255,120000);
+                follower.setStartingPose(new Pose(60, 109, Math.toRadians(180)));
+            }
+            else{
+                launchSystem = new LaunchSystem(config, LaunchSystem.bluePurpleGoalPoseAuto);
+                gamepad1.setLedColor(255,0,255,120000);
+                follower.setStartingPose(new Pose(56.5, -45.1, Math.toRadians(265)));
+            }
+        }
     }
 
     @Override
@@ -99,12 +116,11 @@ public class TeleBlueFRI extends OpMode {
         }
         if(gamepad1.rightBumperWasPressed()) {
             if(blue){
-                follower.setPose(new Pose(12, 12, Math.toRadians(180)));
+                follower.setPose(new Pose(19, 122, Math.toRadians(144)));
                 launchSystem.manualZeroTurret();
             }
             else{
                 follower.setPose(new Pose(11.8, -(131.3), Math.toRadians(180))); // de schimbat, pozitie noua cos mov -131.7
-
                 launchSystem.manualZeroTurret();
             }
         }

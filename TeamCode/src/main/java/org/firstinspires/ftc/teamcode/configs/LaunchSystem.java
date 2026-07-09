@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.configs;
 
-import static org.firstinspires.ftc.teamcode.comp.tele.TeleRed.speed;
-
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -62,6 +60,7 @@ public class LaunchSystem {
     public static final Pose redGoalPose = new Pose(144, 144);
     public static final Pose redpurpleGoalPose = new Pose(70.7,(-131)); // First Robotics Initiative - FRI Cybermoon
     public static final Pose bluepurpleGoalPose = new Pose(70,(-131)); // First Robotics Initiative - FRI Cybermoon
+    public static final Pose bluePurpleGoalPoseAuto = new Pose(60,8); // First Robotics Initiative - FRI Cybermoon
 
     private Pose goalPose = blueGoalPose;
 
@@ -123,10 +122,10 @@ public class LaunchSystem {
 
             double rawTarget = betterNormalize(fieldAngle - robotHeading);
 
-            if (rawTarget > 250) {
-                targetDeg = 250;
-            } else if (rawTarget < -110) {
-                targetDeg = -110;
+            if (rawTarget > 190) {
+                targetDeg = 190;//250
+            } else if (rawTarget < -170) {
+                targetDeg = -170;//-110
             } else {
                 targetDeg = rawTarget;
             }
@@ -164,8 +163,10 @@ public class LaunchSystem {
     }
 
     private double betterNormalize(double degrees) {
-        while (degrees > 230) degrees -= 360;
-        while (degrees < -130) degrees += 360;
+        while (degrees > 190) //230 -> 170
+            degrees -= 360;
+        while (degrees < -170) //-130 -> -190
+            degrees += 360;
         return degrees;
     }
 
