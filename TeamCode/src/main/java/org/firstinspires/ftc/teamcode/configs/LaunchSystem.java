@@ -41,6 +41,7 @@ public class LaunchSystem {
     private final double TICKS_PER_DEGREE = (8192.0 * (190.0 / 35.0)) / 360.0;
 
     public double turretOffsetDeg = 0;
+    public double turretOffsetDegPurple = 0;
     private boolean trackingEnabled = false;
     private boolean isResetting = false;
     private boolean isLaunching = false;
@@ -99,6 +100,67 @@ public class LaunchSystem {
 
     public void setGoalPose(Pose goalPose) {
         this.goalPose = goalPose;
+    }
+
+    public void updateTurret(Pose robotPose, double robotVelX, double robotVelY, boolean blue) {
+        double currentDeg = getCurrentDeg(blue);
+        double targetDeg;
+
+        if (trackingEnabled) {
+            double distance = returnDistance(robotPose);
+            double flightTime = estimateFlightTime(distance);
+
+            // Predict where the robot will BE when ball arrives
+            double futureX = robotPose.getX() + robotVelX * flightTime;
+            double futureY = robotPose.getY() + robotVelY * flightTime;
+
+
+            double dx = goalPose.getX() - futureX;
+            double dy = goalPose.getY() - futureY;
+            double fieldAngle = Math.toDegrees(Math.atan2(dy, dx));
+            double robotHeading = Math.toDegrees(robotPose.getHeading());
+
+
+            double rawTarget = betterNormalize(fieldAngle - robotHeading);
+
+            if (rawTarget > 190) {
+                targetDeg = 190;//250
+            } else if (rawTarget < -170) {
+                targetDeg = -170;//-110
+            } else {
+                targetDeg = rawTarget;
+            }
+        } else {
+            targetDeg = isResetting ? 0 : currentDeg;
+        }
+        double error = targetDeg - currentDeg;
+
+        // PID Math
+        double dt = turretTimer.seconds();
+        if (dt <= 0) dt = 0.001;
+        turretTimer.reset();
+
+        if (trackingEnabled || isResetting) {
+            integralSum += error * dt;
+            // Anti-windup pentru a proteja motorul la margini
+            integralSum = Range.clip(integralSum, -20, 20);
+        } else {
+            integralSum = 0;
+        }
+
+        double derivative = (error - lastError) / dt;
+        lastError = error;
+
+        double power = (error * turretP) + (integralSum * turretI) + (derivative * turretD);
+
+        // Static friction compensation (kS)
+        if (Math.abs(error) > 1.0) power += Math.signum(error) * kS;
+
+        // Deadzone pentru stabilitate
+        if (Math.abs(error) < 0.5) power = 0;
+
+        // Limităm puterea pentru a nu brusca mecanismul la capete
+        turretMotor.setPower(Range.clip(power, -1, 1));
     }
 
     public void updateTurret(Pose robotPose, double robotVelX, double robotVelY) {
@@ -174,10 +236,18 @@ public class LaunchSystem {
         return -(turretEncoderPort.getCurrentPosition() / TICKS_PER_DEGREE) + turretOffsetDeg;
     }
 
+    public double getCurrentDeg(boolean blue) {
+        if(blue)
+            return -(turretEncoderPort.getCurrentPosition() / TICKS_PER_DEGREE) + turretOffsetDeg;
+        else
+            return -(turretEncoderPort.getCurrentPosition() / TICKS_PER_DEGREE) + turretOffsetDegPurple;
+    }
+
     public void manualZeroTurret() {
         turretEncoderPort.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         turretEncoderPort.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         turretOffsetDeg = 0;
+        turretOffsetDegPurple = 0;
         lastSavedPosition = 0;
     }
 
@@ -270,13 +340,19 @@ public class LaunchSystem {
 
         return false;
     }
-    public static double velocityDifference = 60;
+    public static double velocityDifference = 100;//was 60
     public void fullStop() { isLaunching = false; lm1.setVelocity(0); lm2.setVelocity(0); }
     public double getVelocity() { return (lm1.getVelocity() + lm2.getVelocity()) / 2.0; }
     public double returnDistance(Pose robotPose){
         return Math.hypot(goalPose.getX() - robotPose.getX(), goalPose.getY() - robotPose.getY());
     }
     public void adjustOffset(double delta) { turretOffsetDeg += delta; }
+
+    public void adjustOffset(double delta, boolean blue) {
+        if(blue)
+            turretOffsetDeg += delta;
+        else turretOffsetDegPurple += delta;
+    }
     public void updatePIDF() {
         lm1.setVelocityPIDFCoefficients(P, 0, 0, F);
         lm2.setVelocityPIDFCoefficients(P, 0, 0, F);
@@ -285,12 +361,21 @@ public class LaunchSystem {
         return isLaunching;
     }
     public double getTargetDeg(Pose robotPose) {
-
         double dx = goalPose.getX() - robotPose.getX();
         double dy = goalPose.getY() - robotPose.getY();
         double angleToGoalDeg = Math.toDegrees(Math.atan2(dy, dx));
         double robotHeadingDeg = Math.toDegrees(robotPose.getHeading());
         return (angleToGoalDeg - robotHeadingDeg) + turretOffsetDeg;
 
+    }
+    public double getTargetDeg(Pose robotPose, boolean blue) {
+        double dx = goalPose.getX() - robotPose.getX();
+        double dy = goalPose.getY() - robotPose.getY();
+        double angleToGoalDeg = Math.toDegrees(Math.atan2(dy, dx));
+        double robotHeadingDeg = Math.toDegrees(robotPose.getHeading());
+        if(blue)
+            return (angleToGoalDeg - robotHeadingDeg) + turretOffsetDeg;
+        else
+            return (angleToGoalDeg - robotHeadingDeg) + turretOffsetDegPurple;
     }
 }

@@ -26,6 +26,9 @@ import java.util.function.Supplier;
 @Configurable
 @TeleOp
 public class TeleBlueFRI extends OpMode {
+    private double currentX;
+    private double currentY;
+    private double currentAngle;
     private Follower follower;
     private LaunchSystem launchSystem;
     private Configuration config;
@@ -42,7 +45,10 @@ public class TeleBlueFRI extends OpMode {
     @Override
     public void init() {
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(new Pose(60, 109, Math.toRadians(180)));
+        currentX=60;
+        currentY=109;
+        currentAngle=180;
+        follower.setStartingPose(new Pose (60, 109, Math.toRadians(180)));
         follower.update();
         config = new Configuration(hardwareMap);
         launchSystem = new LaunchSystem(config, LaunchSystem.blueGoalPose);
@@ -55,14 +61,19 @@ public class TeleBlueFRI extends OpMode {
         if(gamepad1.touchpadWasPressed()){
             blue=!blue;
             if(blue){
+
                 launchSystem = new LaunchSystem(config, LaunchSystem.blueGoalPose);
                 gamepad1.setLedColor(0,0,255,120000);
-                follower.setStartingPose(new Pose(60, 109, Math.toRadians(180)));
+                follower.setPose(new Pose(60, 109, Math.toRadians(180)));
+//                follower.update();
             }
             else{
+                //follower.setStartingPose(new Pose(56.5, 20-65.1, Math.toRadians(265)));
+//                follower.setPose(new Pose(currentX, currentY,Math.toRadians(currentAngle)));
                 launchSystem = new LaunchSystem(config, LaunchSystem.bluePurpleGoalPoseAuto);
                 gamepad1.setLedColor(255,0,255,120000);
-                follower.setStartingPose(new Pose(56.5, -45.1, Math.toRadians(265)));
+                follower.setPose(new Pose(56.5, 20-65.1, Math.toRadians(265)));
+//                follower.update();
             }
         }
     }
@@ -85,7 +96,7 @@ public class TeleBlueFRI extends OpMode {
         }
 
         if (gamepad1.bWasPressed()){
-            launchSystem.adjustOffset(4);
+            launchSystem.adjustOffset(4, blue);
         }
 
         follower.update();
@@ -97,12 +108,12 @@ public class TeleBlueFRI extends OpMode {
 
         // Update Turret and Shooting Logic
         stateMachine();
-        launchSystem.updateTurret(follower.getPose(), follower.getVelocity().getXComponent(), follower.getVelocity().getYComponent());
+        launchSystem.updateTurret(follower.getPose(), follower.getVelocity().getXComponent(), follower.getVelocity().getYComponent(), blue);
 
         // --- Nudge Controls (D-Pad Left/Right) ---
 
         if (gamepad1.xWasPressed()) {
-            launchSystem.adjustOffset(-4);
+            launchSystem.adjustOffset(-4, blue);
         }
 
         if (gamepad1.dpadUpWasPressed()) speed += 50;      // Fine-tune speed
@@ -189,9 +200,10 @@ public class TeleBlueFRI extends OpMode {
     public void displayData() {
         telemetry.addData("--- TURRET ---", "");
         telemetry.addData("Mode", launchSystem.isTracking() ? "AUTO-AIM" : "MANUAL/RESET");
-        telemetry.addData("Target Deg", "%.2f", launchSystem.getTargetDeg(follower.getPose()));
-        telemetry.addData("Current Deg", "%.2f", launchSystem.getCurrentDeg());
+        telemetry.addData("Target Deg", "%.2f", launchSystem.getTargetDeg(follower.getPose(), blue));
+        telemetry.addData("Current Deg", "%.2f", launchSystem.getCurrentDeg(blue));
         telemetry.addData("Offset (Ticks)", launchSystem.turretOffsetDeg);
+        telemetry.addData("Offset (Ticks) Purple", launchSystem.turretOffsetDegPurple);
         telemetry.addData("Launcher Angle: ", angle);
 
         telemetry.addData("--- LOCALIZATION ---", "");

@@ -32,7 +32,7 @@ public class AutoBlueShortSharedFRI extends OpMode {
     private final Pose startPose    = new Pose(61, 32, Math.toRadians(310));
     private final Pose scorePose    = new Pose(47, 63,    Math.toRadians(180));//-50
     private final Pose pickupBottom = new Pose(11,15, Math.toRadians(270));
-    private final Pose cyclePose = new Pose(23,15, Math.toRadians(270));
+    private final Pose cyclePose = new Pose(15,15, Math.toRadians(270));
     //private final Pose fisrtLinePose  = new Pose(42, 84, Math.toRadians(180));
     private final Pose pickup1Pose    = new Pose(27, 61, Math.toRadians(180));
 
