@@ -59,7 +59,8 @@ public class LaunchSystem {
 
     public static final Pose blueGoalPose = new Pose(0, 144);
     public static final Pose redGoalPose = new Pose(144, 144);
-    public static final Pose redpurpleGoalPose = new Pose(70.7,(-131)); // First Robotics Initiative - FRI Cybermoon
+    public static final Pose redpurpleGoalPose = new Pose(73.3,(-131)); // First Robotics Initiative - FRI Cybermoon
+    public static final Pose redpurpleGoalPoseAuto = new Pose(84,8); // First Robotics Initiative - FRI Cybermoon
     public static final Pose bluepurpleGoalPose = new Pose(70,(-131)); // First Robotics Initiative - FRI Cybermoon
     public static final Pose bluePurpleGoalPoseAuto = new Pose(60,8); // First Robotics Initiative - FRI Cybermoon
 
@@ -340,7 +341,7 @@ public class LaunchSystem {
 
         return false;
     }
-    public static double velocityDifference = 100;//was 60
+    public static double velocityDifference = 135;//was 60
     public void fullStop() { isLaunching = false; lm1.setVelocity(0); lm2.setVelocity(0); }
     public double getVelocity() { return (lm1.getVelocity() + lm2.getVelocity()) / 2.0; }
     public double returnDistance(Pose robotPose){

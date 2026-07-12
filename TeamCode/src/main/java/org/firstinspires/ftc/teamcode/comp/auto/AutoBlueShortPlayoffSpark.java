@@ -36,12 +36,11 @@ public class AutoBlueShortPlayoffSpark extends OpMode {
     private final Pose fisrtLinePose  = new Pose(42, 84, Math.toRadians(180));
     private final Pose pickup1Pose    = new Pose(26, 84, Math.toRadians(180));
 
-    private final Pose secondLinePose = new Pose(42, 60, Math.toRadians(180));
     private final Pose pickup2Pose    = new Pose(23, 60, Math.toRadians(180));
     public static final Pose openGatePose   = new Pose(gateX, gateY, Math.toRadians(gateHeading));
 
     private final Pose pickupGate = new Pose(pickupX, pickupY,  Math.toRadians(pickupHeading));
-    private final Pose scoreLeave = new Pose(57, 98,  Math.toRadians(135));
+    private final Pose scoreLeave = new Pose(57, 98,  Math.toRadians(145));
 
     private Configuration configuration;
     private LaunchSystem launchSystem;
@@ -123,7 +122,7 @@ public class AutoBlueShortPlayoffSpark extends OpMode {
                 break;
 
             case 3: // Wait for gate to open, then collect
-                if (!follower.isBusy() && gateTimer.seconds() > 1.8) {
+                if (!follower.isBusy() && gateTimer.seconds() > 1.5) {
                     follower.followPath(gateCollect);
                     gateTimer.reset();
                     setPathState(4);
@@ -150,7 +149,7 @@ public class AutoBlueShortPlayoffSpark extends OpMode {
                 break;
 
             case 8: // Wait for gate, then collect
-                if (!follower.isBusy() && gateTimer.seconds() > 1.8) {
+                if (!follower.isBusy() && gateTimer.seconds() > 1.5) {
                     follower.followPath(gateCollect);
                     gateTimer.reset();
                     setPathState(9);
@@ -175,7 +174,7 @@ public class AutoBlueShortPlayoffSpark extends OpMode {
                 break;
 
             case 11: // Wait for gate, then collect
-                if (!follower.isBusy() && gateTimer.seconds() > 1.8) {
+                if (!follower.isBusy() && gateTimer.seconds() > 1.5) {
                     follower.followPath(gateCollect);
                     gateTimer.reset();
                     setPathState(12);
@@ -203,7 +202,7 @@ public class AutoBlueShortPlayoffSpark extends OpMode {
                 if (!follower.isBusy()) {
                     if (launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
 //                        launchSystem.toggleTracking();
-                        launchSystem.adjustOffset(-48);
+//                        launchSystem.adjustOffset(-48);
                         setPathState(-1);
                     }
                 }
@@ -249,9 +248,9 @@ public class AutoBlueShortPlayoffSpark extends OpMode {
                 .addParametricCallback(0, () -> configuration.intakeMotor.setPower(1))
 
                 .addPath(new BezierLine(pickup1Pose, scorePose))
-                .setLinearHeadingInterpolation(pickup1Pose.getHeading(), scorePose.getHeading())
+                .setLinearHeadingInterpolation(pickup1Pose.getHeading(), scoreLeave.getHeading())
                 .addParametricCallback(0.5, () -> configuration.intakeMotor.setPower(0))
-                .addParametricCallback(0.7, () -> launch())
+                .addParametricCallback(0.6, () -> launch())
                 .build();
 
         // Curves to gate position; no launch here

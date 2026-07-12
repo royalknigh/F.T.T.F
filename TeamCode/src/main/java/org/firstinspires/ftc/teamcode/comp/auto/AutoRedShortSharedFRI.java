@@ -19,32 +19,23 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @Configurable
 @Autonomous(name = "Auto Blue Short *Shared* FRI")
-public class AutoBlueShortSharedFRI extends OpMode {
+public class AutoRedShortSharedFRI extends OpMode {
 
     private Follower follower;
     private Timer pathTimer;
     private ElapsedTime gateTimer = new ElapsedTime();
     private int pathState = 0;
 
-    public static double gateX = 15, gateY = 67, gateHeading = 180;
-    public static double pickupX = 11, pickupY = 57, pickupHeading = 130;
+    private final Pose startPose      = new Pose(83, 32, Math.toRadians(230));
+    private final Pose scorePose      = new Pose(97, 63, Math.toRadians(0));
+    private final Pose pickupBottom   = new Pose(133, 15, Math.toRadians(270));
+    private final Pose cyclePose      = new Pose(129, 15, Math.toRadians(270));
 
-    private final Pose startPose    = new Pose(61, 32, Math.toRadians(310));
-    private final Pose scorePose    = new Pose(47, 63,    Math.toRadians(180));//-50
-    private final Pose pickupBottom = new Pose(11,15, Math.toRadians(270));
-    private final Pose cyclePose = new Pose(15,15, Math.toRadians(270));
-    //private final Pose fisrtLinePose  = new Pose(42, 84, Math.toRadians(180));
-    private final Pose pickup1Pose    = new Pose(27, 61, Math.toRadians(180));
+    private final Pose pickup1Pose    = new Pose(117, 61, Math.toRadians(0));
+    private final Pose pickup2Pose    = new Pose(117, 86, Math.toRadians(0));
+    private final Pose pickup3Pose    = new Pose(118, 109, Math.toRadians(0));
 
-//    private final Pose secondLinePose = new Pose(46, 87, Math.toRadians(180));
-    private final Pose pickup2Pose    = new Pose(27, 86, Math.toRadians(180));
-//    private final Pose thirdLinePose = new Pose(45, 112, Math.toRadians(180));
-    private final Pose pickup3Pose    = new Pose(26, 109, Math.toRadians(180));
-//    public static final Pose openGatePose   = new Pose(gateX, gateY, Math.toRadians(gateHeading));
-//
-//    private final Pose pickupGate = new Pose(pickupX, pickupY,  Math.toRadians(pickupHeading));
-    private final Pose leave = new Pose(57, 98,  Math.toRadians(275));
-
+    private final Pose leave          = new Pose(87, 98, Math.toRadians(265));
     private Configuration configuration;
     private LaunchSystem launchSystem;
 
@@ -211,7 +202,7 @@ public class AutoBlueShortSharedFRI extends OpMode {
 
         // Sweeps middle row then curves back to scorePose; launches at arrival
         bottomRow = follower.pathBuilder()
-                .addPath(new BezierCurve(scorePose, new Pose(39,41), new Pose(8,45), pickupBottom))
+                .addPath(new BezierCurve(scorePose, new Pose(105,41), new Pose(136,45), pickupBottom))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), pickupBottom.getHeading())
                 .addParametricCallback(0.4, () -> configuration.intakeMotor.setPower(1))
 
@@ -231,7 +222,7 @@ public class AutoBlueShortSharedFRI extends OpMode {
                 .addParametricCallback(0.9, () -> launch())
                 .build();
         secondRow = follower.pathBuilder()
-                .addPath(new BezierCurve(scorePose, new Pose(55, 91), pickup2Pose))
+                .addPath(new BezierCurve(scorePose, new Pose(89, 91), pickup2Pose))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), pickup2Pose.getHeading())
                 .addParametricCallback(0.3, () -> configuration.intakeMotor.setPower(1))
 
@@ -241,7 +232,7 @@ public class AutoBlueShortSharedFRI extends OpMode {
                 .addParametricCallback(0.9, () -> launch())
                 .build();
         thirdRow = follower.pathBuilder()
-                .addPath(new BezierCurve(scorePose, new Pose(60, 115), pickup3Pose))
+                .addPath(new BezierCurve(scorePose, new Pose(84, 115), pickup3Pose))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), pickup3Pose.getHeading())
                 .addParametricCallback(0.4, () -> configuration.intakeMotor.setPower(1))
 
@@ -251,7 +242,7 @@ public class AutoBlueShortSharedFRI extends OpMode {
                 .addParametricCallback(0.9, () -> launch())
                 .build();
         cycle = follower.pathBuilder()
-                .addPath(new BezierCurve(scorePose, new Pose(27,41), cyclePose))
+                .addPath(new BezierCurve(scorePose, new Pose(117,41), cyclePose))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), cyclePose.getHeading())
                 .addParametricCallback(0.4, () -> configuration.intakeMotor.setPower(1))
 

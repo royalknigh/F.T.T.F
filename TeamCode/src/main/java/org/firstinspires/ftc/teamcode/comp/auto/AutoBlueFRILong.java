@@ -28,15 +28,15 @@ public class AutoBlueFRILong extends OpMode {
     // All x values mirrored: x_red = 144 - x_blue
     // All headings mirrored: heading_red = 180° - heading_blue
     private final Pose startPose = new Pose(50, 7, Math.toRadians(180));
-    private final Pose scorePose = new Pose(55, 22, Math.toRadians(110));
+    private final Pose scorePose = new Pose(52, 22, Math.toRadians(110));
     private final Pose lineup = new Pose(49, 35, Math.toRadians(180));
-    private final Pose pickupPose = new Pose(12, 35, Math.toRadians(180));
-    private final Pose bottomPose = new Pose(10, 10, Math.toRadians(180));
-    private final Pose gatePickup = new Pose(10, 17, Math.toRadians(180));
-    private final Pose gatePickup2 = new Pose(5, 12, Math.toRadians(180));
-    private final Pose gatePickup3 = new Pose(2, 12, Math.toRadians(180));
-    private final Pose gatePickup4 = new Pose(3, 12, Math.toRadians(180));
-    private final Pose park = new Pose(40,30, Math.toRadians(110));
+    private final Pose pickupPose = new Pose(10, 35, Math.toRadians(180));
+    private final Pose bottomPose = new Pose(8, 10, Math.toRadians(180));
+    private final Pose gatePickup = new Pose(8, -9, Math.toRadians(180));
+    private final Pose gatePickup2 = new Pose(10, -4, Math.toRadians(180));
+    private final Pose gatePickup3 = new Pose(10, -7, Math.toRadians(180));
+    private final Pose gatePickup4 = new Pose(10, -8, Math.toRadians(180));
+    private final Pose park = new Pose(40,30, Math.toRadians(105));
 
 
 
@@ -82,7 +82,7 @@ public class AutoBlueFRILong extends OpMode {
 
         scoreBottom = follower.pathBuilder()
                 .addPath(new BezierLine(bottomPose, scorePose))
-                .addParametricCallback(0.2, () -> configuration.intakeMotor.setPower(0))
+                .addParametricCallback(0.6, () -> configuration.intakeMotor.setPower(0))
                 .addParametricCallback(0.9, () -> launch())
                 .setConstantHeadingInterpolation(bottomPose.getHeading())
                 .build();
@@ -94,13 +94,13 @@ public class AutoBlueFRILong extends OpMode {
                 .build();
 
         bottomLineup2 = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose, gatePickup2))
+                .addPath(new BezierCurve(scorePose, new Pose(30, 8), gatePickup2))
                 .setConstantHeadingInterpolation(bottomPose.getHeading())
                 .addParametricCallback(0.3, () -> configuration.intakeMotor.setPower(1))
                 .build();
 
         bottomLineup3 = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose, gatePickup3))
+                .addPath(new BezierCurve(scorePose, new Pose(30, 8), gatePickup3))
                 .setConstantHeadingInterpolation(bottomPose.getHeading())
                 .addParametricCallback(0.3, () -> configuration.intakeMotor.setPower(1))
                 .build();
@@ -245,7 +245,7 @@ public class AutoBlueFRILong extends OpMode {
             case 10: // At gate again — score gate ball; callback fires launch()
                 if (!follower.isBusy()) {
                     follower.followPath(score3);
-                    setPathState(11);
+                    setPathState(13);
                 }
                 break;
 

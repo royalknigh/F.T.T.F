@@ -1,9 +1,16 @@
 package org.firstinspires.ftc.teamcode.comp.tele;
+import static org.firstinspires.ftc.teamcode.comp.tele.TeleRed.speed;
 import static org.firstinspires.ftc.teamcode.configs.LaunchSystem.recoilMult;
 
 import com.bylazar.configurables.annotations.Configurable;
+import com.bylazar.telemetry.PanelsTelemetry;
+import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.HeadingInterpolator;
+import com.pedropathing.paths.Path;
+import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -14,9 +21,14 @@ import org.firstinspires.ftc.teamcode.configs.Configuration;
 import org.firstinspires.ftc.teamcode.configs.LaunchSystem;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
+import java.util.function.Supplier;
+
 @Configurable
 @TeleOp
 public class TeleRedFRI extends OpMode {
+    private double currentX;
+    private double currentY;
+    private double currentAngle;
     private Follower follower;
     private LaunchSystem launchSystem;
     private Configuration config;
@@ -27,74 +39,119 @@ public class TeleRedFRI extends OpMode {
     public static double speed = 1500;
     public boolean idle = true;
     public static Servo marco;
-
+    private boolean blue=true;
     public static boolean testing = false;
 
     @Override
     public void init() {
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(new Pose(60, 109, Math.toRadians(180)));
+        currentX=60;
+        currentY=109;
+        currentAngle=180;
+        follower.setStartingPose(new Pose (60, 109, Math.toRadians(180)));
         follower.update();
         config = new Configuration(hardwareMap);
-        launchSystem = new LaunchSystem(config, LaunchSystem.blueGoalPose);
+        launchSystem = new LaunchSystem(config, LaunchSystem.redGoalPose);
+
         this.marco = config.marco;
         angleOffset = 0;
+    }
+    @Override
+    public void init_loop(){
+        if(gamepad1.touchpadWasPressed()){
+            blue=!blue;
+            if(blue){
+
+                launchSystem = new LaunchSystem(config, LaunchSystem.redGoalPose);
+                gamepad1.setLedColor(0,0,255,120000);
+                follower.setPose(new Pose(84, 109, Math.toRadians(180)));
+//                follower.update();
+            }
+            else{
+                //follower.setStartingPose(new Pose(56.5, 20-65.1, Math.toRadians(265)));
+//                follower.setPose(new Pose(currentX, currentY,Math.toRadians(currentAngle)));
+                launchSystem = new LaunchSystem(config, LaunchSystem.redpurpleGoalPose);
+                gamepad1.setLedColor(255,0,255,120000);
+                follower.setPose(new Pose(87.5, 20-65.1, Math.toRadians(265)));
+//                follower.update();
+            }
+        }
     }
 
     @Override
     public void start(){
         follower.startTeleOpDrive();
     }
-
     @Override
     public void loop() {
+        if(gamepad1.touchpadWasPressed())
+            blue=!blue;
+        if(blue){
+            gamepad1.setLedColor(0,0,255,120000);
+            launchSystem.setGoalPose(LaunchSystem.redGoalPose);
+        }
+        else {
+            gamepad1.setLedColor(255,0,255,120000);
+            launchSystem.setGoalPose(LaunchSystem.redpurpleGoalPose);
+        }
+
+        if (gamepad1.bWasPressed()){
+            launchSystem.adjustOffset(4, blue);
+        }
+
         follower.update();
+        // Only one controller drives at a time, so it's safe to sum both gamepads' stick values
         follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x * 0.5, true);
 
-        if(gamepad1.shareWasPressed() || gamepad2.shareWasPressed())
+        if(gamepad1.shareWasPressed())
             testing = !testing;
 
         // Update Turret and Shooting Logic
         stateMachine();
-        launchSystem.updateTurret(follower.getPose(), follower.getVelocity().getXComponent(), follower.getVelocity().getYComponent());
+        launchSystem.updateTurret(follower.getPose(), follower.getVelocity().getXComponent(), follower.getVelocity().getYComponent(), blue);
 
         // --- Nudge Controls (D-Pad Left/Right) ---
 
-        if (gamepad1.bWasPressed() || gamepad2.bWasPressed()) {
-            launchSystem.adjustOffset(4);
+        if (gamepad1.xWasPressed()) {
+            launchSystem.adjustOffset(-4, blue);
         }
 
-        if (gamepad1.xWasPressed() || gamepad2.xWasPressed()) {
-            launchSystem.adjustOffset(-4);
-        }
+        if (gamepad1.dpadUpWasPressed()) speed += 50;      // Fine-tune speed
+        if (gamepad1.dpadDownWasPressed()) speed -= 50;
 
-        if (gamepad1.dpadUpWasPressed() || gamepad2.dpadUpWasPressed()) speed += 50;      // Fine-tune speed
-        if (gamepad1.dpadDownWasPressed() || gamepad2.dpadDownWasPressed()) speed -= 50;
-
-        if (gamepad1.dpadRightWasPressed() || gamepad2.dpadRightWasPressed()) angleOffset += 0.02; // Fine-tune hood angle
-        if (gamepad1.dpadLeftWasPressed() || gamepad2.dpadLeftWasPressed()) angleOffset -= 0.02;
+        if (gamepad1.dpadRightWasPressed()) angleOffset += 0.02; // Fine-tune hood angle
+        if (gamepad1.dpadLeftWasPressed()) angleOffset -= 0.02;
 
         if (config.intakeMotor.isOverCurrent()) {
             gamepad1.rumbleBlips(3);
-            gamepad2.rumbleBlips(3);
         }
-
-        if(gamepad1.rightBumperWasPressed()) { // cos original
-            follower.setPose(new Pose(19, 122, Math.toRadians(144)));
-            launchSystem.manualZeroTurret();
-        }
-        if(gamepad2.rightBumperWasPressed()) {
-            follower.setPose(new Pose(19, -122, Math.toRadians(144))); // de schimbat, pozitie noua cos mov
-            launchSystem.manualZeroTurret();
+        if(gamepad1.rightBumperWasPressed()) {
+            if(blue){
+                follower.setPose(new Pose(124, 121, Math.toRadians(144)));
+                launchSystem.manualZeroTurret();
+            }
+            else{
+                follower.setPose(new Pose(132, -(131.3), Math.toRadians(180))); // de schimbat, pozitie noua cos mov -131.7
+                launchSystem.manualZeroTurret();
+            }
         }
 
 
         double currentDist = launchSystem.returnDistance(follower.getPose());
-        speedCalculator(currentDist,
-                follower.getVelocity().getXComponent(),
-                follower.getVelocity().getYComponent(),
-                follower.getPose(),
-                LaunchSystem.blueGoalPose);
+        if(blue){
+            speedCalculator(currentDist,
+                    follower.getVelocity().getXComponent(),
+                    follower.getVelocity().getYComponent(),
+                    follower.getPose(),
+                    LaunchSystem.blueGoalPose);
+        }
+        else{
+            speedCalculator(currentDist,
+                    follower.getVelocity().getXComponent(),
+                    follower.getVelocity().getYComponent(),
+                    follower.getPose(),
+                    LaunchSystem.bluepurpleGoalPose); // de modificat in purple goal pose
+        }
         if (!launchSystem.isLaunching()) {
             marco.setPosition(angleCalculator(currentDist));
         }
@@ -107,7 +164,8 @@ public class TeleRedFRI extends OpMode {
     }
 
     public void stateMachine() {
-        if (gamepad1.aWasPressed() || gamepad2.aWasPressed()) launchSystem.toggleTracking();
+        if (gamepad1.aWasPressed())
+            launchSystem.toggleTracking();
 //        if (gamepad1.xWasPressed()) launchSystem.startReset();
 
 //        if(config.intakeMotor.isOverCurrent())
@@ -115,16 +173,16 @@ public class TeleRedFRI extends OpMode {
 
         switch (state) {
             case PIKCUP:
-                if (gamepad1.leftBumperWasPressed() || gamepad2.leftBumperWasPressed()) idle = !idle;
+                if (gamepad1.leftBumperWasPressed()) idle = !idle;
                 if (idle) launchSystem.idle(); else launchSystem.fullStop();
-                if(gamepad1.left_trigger>0.1 || gamepad2.left_trigger>0.1)
-                    config.intakeMotor.setPower(gamepad1.left_trigger+gamepad2.left_trigger);
-                else if( gamepad1.right_trigger>0.2 || gamepad2.right_trigger>0.2)
-                    config.intakeMotor.setPower(-gamepad1.right_trigger-gamepad2.right_trigger);
+                if(gamepad1.left_trigger>0.1)
+                    config.intakeMotor.setPower(gamepad1.left_trigger);
+                else if( gamepad1.right_trigger>0.2)
+                    config.intakeMotor.setPower(-gamepad1.right_trigger);
                 else
                     config.intakeMotor.setPower(0);
 
-                if (gamepad1.yWasPressed() || gamepad2.yWasPressed()) {
+                if (gamepad1.yWasPressed()) {
                     state = State.LAUNCH;
                     launchSystem.start(speed);
                 }
@@ -133,6 +191,7 @@ public class TeleRedFRI extends OpMode {
                 if (launchSystem.update(launchSystem.returnDistance(follower.getPose()), speed)) {
                     state = State.PIKCUP;
                     gamepad1.rumbleBlips(3);
+
                 }
                 break;
         }
@@ -141,16 +200,17 @@ public class TeleRedFRI extends OpMode {
     public void displayData() {
         telemetry.addData("--- TURRET ---", "");
         telemetry.addData("Mode", launchSystem.isTracking() ? "AUTO-AIM" : "MANUAL/RESET");
-        telemetry.addData("Target Deg", "%.2f", launchSystem.getTargetDeg(follower.getPose()));
-        telemetry.addData("Current Deg", "%.2f", launchSystem.getCurrentDeg());
+        telemetry.addData("Target Deg", "%.2f", launchSystem.getTargetDeg(follower.getPose(), blue));
+        telemetry.addData("Current Deg", "%.2f", launchSystem.getCurrentDeg(blue));
         telemetry.addData("Offset (Ticks)", launchSystem.turretOffsetDeg);
+        telemetry.addData("Offset (Ticks) Purple", launchSystem.turretOffsetDegPurple);
         telemetry.addData("Launcher Angle: ", angle);
 
         telemetry.addData("--- LOCALIZATION ---", "");
         telemetry.addData("Heading", "%.2f Deg", Math.toDegrees(follower.getPose().getHeading()));
         telemetry.addData("x: ", follower.getPose().getX()) ;
         telemetry.addData("y: ", follower.getPose().getY()) ;
-
+        telemetry.addData("Blue", blue);
         telemetry.addData("distance", launchSystem.returnDistance(follower.getPose()));
 
 
@@ -176,13 +236,13 @@ public class TeleRedFRI extends OpMode {
     public static double speedVelocityGain = 3; // tune this
 
     public static void speedCalculator(double x){
-        speed = -0.0925325*x*x+24.25649*x+728.0303-50;
+        speed = -0.0925325*x*x+24.25649*x+728.0303-40;
         LaunchSystem.idleVelocity = speed;
     }
 
     public static void speedCalculator(double x, double robotVelX, double robotVelY, Pose robotPose, Pose goalPose) {
         if (!testing)
-            speed = -0.0925325*x*x+24.25649*x+728.0303-50;
+            speed = -0.0925325*x*x+24.25649*x+728.0303-40;
 
         // Dot product: how much of robot velocity is toward/away from goal
         double dx = goalPose.getX() - robotPose.getX();
