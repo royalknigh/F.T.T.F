@@ -10,17 +10,16 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
+import org.firstinspires.ftc.teamcode.comp.tele.Tele;
 import org.firstinspires.ftc.teamcode.configs.Configuration;
 import org.firstinspires.ftc.teamcode.configs.LaunchSystem;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.teamcode.comp.tele.Tele;
-@Disabled
+
 @Configurable
-@Autonomous(name = "Auto Blue Long")
-public class AutoBlueLong extends OpMode {
+@Autonomous(name = "🔴 Auto Red *FRI* ----> Long")
+public class AutoRedFRILong extends OpMode {
 
     private Follower follower;
     private Timer pathTimer;
@@ -28,22 +27,24 @@ public class AutoBlueLong extends OpMode {
 
     // All x values mirrored: x_red = 144 - x_blue
     // All headings mirrored: heading_red = 180° - heading_blue
-    private final Pose startPose = new Pose(55, 10, Math.toRadians(90));
-    private final Pose scorePose = new Pose(60, 22, Math.toRadians(110));
-    private final Pose lineup = new Pose(49, 35, Math.toRadians(180));
-    private final Pose pickupPose = new Pose(12, 35, Math.toRadians(180));
-    private final Pose bottomPose = new Pose(10, 10, Math.toRadians(180));
-    private final Pose gatePickup = new Pose(10, 17, Math.toRadians(90));
-    private final Pose gatePickup2 = new Pose(10, 12, Math.toRadians(90));
-
-    private final Pose park = new Pose(40,30, Math.toRadians(110));
+    private final Pose startPose = new Pose(94, 7, Math.toRadians(0));
+    private final Pose scorePose = new Pose(90, 22, Math.toRadians(70));
+    private final Pose lineup = new Pose(49, 35, Math.toRadians(0));
+    private final Pose pickupPose = new Pose(134, 35, Math.toRadians(0));
+    private final Pose bottomPose = new Pose(136, 10, Math.toRadians(0));
+    private final Pose gatePickup = new Pose(136, -9, Math.toRadians(0));
+    private final Pose gatePickup2 = new Pose(134, -4, Math.toRadians(0));
+    private final Pose gatePickup3 = new Pose(134, -7, Math.toRadians(0));
+    private final Pose gatePickup4 = new Pose(134, -10, Math.toRadians(0));
+    private final Pose gatePickup5 = new Pose(134, 20, Math.toRadians(90));
+    private final Pose park = new Pose(104,30, Math.toRadians(75));
 
 
 
     private Configuration configuration;
     private LaunchSystem launchSystem;
 
-    private PathChain scorePreload, alignRow, score, pickupBottom, score2, bottomLineup, bottomLineup2, score3, score4, leave;
+    private PathChain scorePreload, alignRow, scoreRow, pickupBottom, scoreBottom, bottomLineup, bottomLineup2, bottomLineup3, bottomLineup4, bottomLineup5, score1, score2, score3, score4, score5, leave;
 
     /** Called by path callbacks — spins up the flywheel and enables turret tracking. */
     public void launch() {
@@ -60,12 +61,12 @@ public class AutoBlueLong extends OpMode {
 
         // Control point: x = 144 - 55 = 89
         alignRow = follower.pathBuilder()
-                .addPath(new BezierCurve(scorePose, new Pose(40, 34), pickupPose))
+                .addPath(new BezierCurve(scorePose, new Pose(104, 37), pickupPose))
                 .setTangentHeadingInterpolation()
                 .addParametricCallback(0.2, () -> configuration.intakeMotor.setPower(1))
                 .build();
 
-        score = follower.pathBuilder()
+        scoreRow = follower.pathBuilder()
                 .addPath(new BezierLine(pickupPose, scorePose))
                 .setConstantHeadingInterpolation(pickupPose.getHeading())
                 .addParametricCallback(0.2, () -> configuration.intakeMotor.setPower(0))
@@ -80,9 +81,9 @@ public class AutoBlueLong extends OpMode {
                 .setConstantHeadingInterpolation(bottomPose.getHeading())
                 .build();
 
-        score2 = follower.pathBuilder()
+        scoreBottom = follower.pathBuilder()
                 .addPath(new BezierLine(bottomPose, scorePose))
-                .addParametricCallback(0.2, () -> configuration.intakeMotor.setPower(0))
+                .addParametricCallback(0.6, () -> configuration.intakeMotor.setPower(0))
                 .addParametricCallback(0.9, () -> launch())
                 .setConstantHeadingInterpolation(bottomPose.getHeading())
                 .build();
@@ -94,24 +95,62 @@ public class AutoBlueLong extends OpMode {
                 .build();
 
         bottomLineup2 = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose, gatePickup2))
+                .addPath(new BezierCurve(scorePose, new Pose(114, 8), gatePickup2))
                 .setConstantHeadingInterpolation(bottomPose.getHeading())
                 .addParametricCallback(0.3, () -> configuration.intakeMotor.setPower(1))
                 .build();
 
+        bottomLineup3 = follower.pathBuilder()
+                .addPath(new BezierCurve(scorePose, new Pose(114, 8), gatePickup3))
+                .setConstantHeadingInterpolation(bottomPose.getHeading())
+                .addParametricCallback(0.3, () -> configuration.intakeMotor.setPower(1))
+                .build();
 
-        score3 = follower.pathBuilder()
+        bottomLineup4 = follower.pathBuilder()
+                .addPath(new BezierLine(scorePose, gatePickup3))
+                .setConstantHeadingInterpolation(bottomPose.getHeading())
+                .addParametricCallback(0.3, () -> configuration.intakeMotor.setPower(1))
+                .build();
+
+        bottomLineup5 = follower.pathBuilder()
+                .addPath(new BezierCurve(scorePose, new Pose(132, 22), gatePickup5))
+                .setLinearHeadingInterpolation(bottomPose.getHeading(), gatePickup5.getHeading())
+                .addParametricCallback(0.3, () -> configuration.intakeMotor.setPower(1))
+                .build();
+
+        score1 = follower.pathBuilder()
                 .addPath(new BezierLine(gatePickup, scorePose))
                 .addParametricCallback(0.3, () -> configuration.intakeMotor.setPower(0))
-                .addParametricCallback(0.9, () -> launch())
+                .addParametricCallback(0.7, () -> launch())
+                .setConstantHeadingInterpolation(bottomPose.getHeading())
+                .build();
+
+        score2 = follower.pathBuilder()
+                .addPath(new BezierLine(gatePickup2, scorePose))
+                .addParametricCallback(0.3, () -> configuration.intakeMotor.setPower(0))
+                .addParametricCallback(0.7, () -> launch())
+                .setConstantHeadingInterpolation(bottomPose.getHeading())
+                .build();
+
+        score3 = follower.pathBuilder()
+                .addPath(new BezierLine(gatePickup3, scorePose))
+                .addParametricCallback(0.3, () -> configuration.intakeMotor.setPower(0))
+                .addParametricCallback(0.7, () -> launch())
                 .setConstantHeadingInterpolation(bottomPose.getHeading())
                 .build();
 
         score4 = follower.pathBuilder()
-                .addPath(new BezierLine(gatePickup2, scorePose))
+                .addPath(new BezierLine(gatePickup4, scorePose))
                 .addParametricCallback(0.3, () -> configuration.intakeMotor.setPower(0))
-                .addParametricCallback(0.9, () -> launch())
+                .addParametricCallback(0.7, () -> launch())
                 .setConstantHeadingInterpolation(bottomPose.getHeading())
+                .build();
+
+        score5 = follower.pathBuilder()
+                .addPath(new BezierLine(gatePickup5, scorePose))
+                .addParametricCallback(0.3, () -> configuration.intakeMotor.setPower(0))
+                .addParametricCallback(0.7, () -> launch())
+                .setLinearHeadingInterpolation(gatePickup5.getHeading(), bottomPose.getHeading())
                 .build();
 
         leave = follower.pathBuilder()
@@ -144,7 +183,7 @@ public class AutoBlueLong extends OpMode {
                 if (!follower.isBusy()) {
                     configuration.intakeMotor.setPower(1);
                     follower.setMaxPower(1);
-                    follower.followPath(score);
+                    follower.followPath(scoreRow);
                     setPathState(3);
                 }
                 break;
@@ -163,7 +202,7 @@ public class AutoBlueLong extends OpMode {
             case 4: // Bottom pickup done — return to score; callback fires launch()
                 if (!follower.isBusy()) {
                     follower.setMaxPower(1);
-                    follower.followPath(score2);
+                    follower.followPath(scoreBottom);
                     setPathState(5);
                 }
                 break;
@@ -182,7 +221,7 @@ public class AutoBlueLong extends OpMode {
 
             case 6: // At gate — score gate ball; callback fires launch()
                 if (!follower.isBusy()) {
-                    follower.followPath(score3);
+                    follower.followPath(score1);
                     setPathState(7);
                 }
                 break;
@@ -200,12 +239,48 @@ public class AutoBlueLong extends OpMode {
 
             case 8: // At gate again — score gate ball; callback fires launch()
                 if (!follower.isBusy()) {
-                    follower.followPath(score4);
+                    follower.followPath(score2);
                     setPathState(9);
                 }
                 break;
 
-            case 9: // Wait for second gate-ball launch, then leave
+            case 9: // Wait for gate-ball launch, then return to gate
+                if (!follower.isBusy()) {
+                    if (launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
+                        launchSystem.toggleTracking();
+                        follower.followPath(bottomLineup3);
+                        configuration.intakeMotor.setPower(0.8);
+                        setPathState(10);
+                    }
+                }
+                break;
+
+            case 10: // At gate again — score gate ball; callback fires launch()
+                if (!follower.isBusy()) {
+                    follower.followPath(score3);
+                    setPathState(11);
+                }
+                break;
+
+            case 11: // Wait for gate-ball launch, then return to gate
+                if (!follower.isBusy()) {
+                    if (launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
+                        launchSystem.toggleTracking();
+                        follower.followPath(bottomLineup5);
+                        configuration.intakeMotor.setPower(0.8);
+                        setPathState(12);
+                    }
+                }
+                break;
+
+            case 12: // At gate again — score gate ball; callback fires launch()
+                if (!follower.isBusy()) {
+                    follower.followPath(score5);
+                    setPathState(13);
+                }
+                break;
+
+            case 13: // Wait for second gate-ball launch, then leave
                 if (!follower.isBusy()) {
                     if (launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
 //                        launchSystem.toggleTracking();
@@ -229,7 +304,7 @@ public class AutoBlueLong extends OpMode {
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(startPose);
         configuration = new Configuration(hardwareMap);
-        launchSystem = new LaunchSystem(configuration, LaunchSystem.blueGoalPose);
+        launchSystem = new LaunchSystem(configuration, LaunchSystem.redGoalPose);
         configuration.stopper.setPosition(holdBall);
         buildPaths();
     }

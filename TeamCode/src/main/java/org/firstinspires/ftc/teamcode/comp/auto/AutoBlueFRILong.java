@@ -18,7 +18,7 @@ import org.firstinspires.ftc.teamcode.configs.LaunchSystem;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @Configurable
-@Autonomous(name = "Auto Blue *FRI* Long")
+@Autonomous(name = "🔵 Auto Blue *FRI* ----> Long")
 public class AutoBlueFRILong extends OpMode {
 
     private Follower follower;

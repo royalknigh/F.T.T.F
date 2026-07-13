@@ -18,7 +18,7 @@ import org.firstinspires.ftc.teamcode.configs.LaunchSystem;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @Configurable
-@Autonomous(name = "Auto Blue Short *Shared* FRI")
+@Autonomous(name = "🔵 Auto Blue *FRI* ----> Shared")
 public class AutoBlueShortSharedFRI extends OpMode {
 
     private Follower follower;

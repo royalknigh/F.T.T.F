@@ -60,7 +60,7 @@ public class LaunchSystem {
     public static final Pose blueGoalPose = new Pose(0, 144);
     public static final Pose redGoalPose = new Pose(144, 144);
     public static final Pose redpurpleGoalPose = new Pose(73.3,(-131)); // First Robotics Initiative - FRI Cybermoon
-    public static final Pose redpurpleGoalPoseAuto = new Pose(84,8); // First Robotics Initiative - FRI Cybermoon
+    public static final Pose redpurpleGoalPoseAuto = new Pose(82,8); // First Robotics Initiative - FRI Cybermoon
     public static final Pose bluepurpleGoalPose = new Pose(70,(-131)); // First Robotics Initiative - FRI Cybermoon
     public static final Pose bluePurpleGoalPoseAuto = new Pose(60,8); // First Robotics Initiative - FRI Cybermoon
 

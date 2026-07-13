@@ -18,6 +18,7 @@ import org.firstinspires.ftc.teamcode.configs.Configuration;
 import org.firstinspires.ftc.teamcode.configs.LaunchSystem;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.comp.tele.Tele;
+@Disabled
 @Configurable
 @Autonomous(name = "Auto Red Long")
 public class AutoRedLong extends OpMode {
