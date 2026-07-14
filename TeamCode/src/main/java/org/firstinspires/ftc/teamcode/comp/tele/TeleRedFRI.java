@@ -64,7 +64,7 @@ public class TeleRedFRI extends OpMode {
 
                 launchSystem = new LaunchSystem(config, LaunchSystem.redGoalPose);
                 gamepad1.setLedColor(0,0,255,120000);
-                follower.setPose(new Pose(84, 109, Math.toRadians(180)));
+                follower.setPose(new Pose(84, 109, Math.toRadians(36)));
 //                follower.update();
             }
             else{
@@ -72,7 +72,7 @@ public class TeleRedFRI extends OpMode {
 //                follower.setPose(new Pose(currentX, currentY,Math.toRadians(currentAngle)));
                 launchSystem = new LaunchSystem(config, LaunchSystem.redpurpleGoalPose);
                 gamepad1.setLedColor(255,0,255,120000);
-                follower.setPose(new Pose(87.5, 20-65.1, Math.toRadians(265)));
+                follower.setPose(new Pose(87.5, 20-65.1, Math.toRadians(85)));
 //                follower.update();
             }
         }
@@ -127,11 +127,11 @@ public class TeleRedFRI extends OpMode {
         }
         if(gamepad1.rightBumperWasPressed()) {
             if(blue){
-                follower.setPose(new Pose(124, 121, Math.toRadians(144)));
+                follower.setPose(new Pose(124, 121, Math.toRadians(36)));
                 launchSystem.manualZeroTurret();
             }
             else{
-                follower.setPose(new Pose(132, -(131.3), Math.toRadians(180))); // de schimbat, pozitie noua cos mov -131.7
+                follower.setPose(new Pose(132, -(131.3), Math.toRadians(0))); // de schimbat, pozitie noua cos mov -131.7
                 launchSystem.manualZeroTurret();
             }
         }
@@ -228,7 +228,7 @@ public class TeleRedFRI extends OpMode {
 
     public static double angleCalculator(double x){
         if(!testing)
-            angle = -0.000075*x*x+0.01815*x-0.241667+0.02 +angleOffset;
+            angle = -0.000075*x*x+0.01815*x-0.241667+0.02;
         angle = Range.clip(angle, 0, 0.85);
         return angle;
     }
@@ -236,13 +236,13 @@ public class TeleRedFRI extends OpMode {
     public static double speedVelocityGain = 3; // tune this
 
     public static void speedCalculator(double x){
-        speed = -0.0925325*x*x+24.25649*x+728.0303-40;
+        speed = -0.0925325*x*x+24.25649*x+728.0303-30;
         LaunchSystem.idleVelocity = speed;
     }
 
     public static void speedCalculator(double x, double robotVelX, double robotVelY, Pose robotPose, Pose goalPose) {
         if (!testing)
-            speed = -0.0925325*x*x+24.25649*x+728.0303-40;
+            speed = -0.0925325*x*x+24.25649*x+728.0303-30;
 
         // Dot product: how much of robot velocity is toward/away from goal
         double dx = goalPose.getX() - robotPose.getX();

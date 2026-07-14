@@ -228,7 +228,8 @@ public class TeleBlueFRI extends OpMode {
 
     public static double angleCalculator(double x){
         if(!testing)
-            angle = -0.000075*x*x+0.01815*x-0.241667+0.02 +angleOffset;
+            angle = -0.000075*x*x+0.01815*x-0.241667+0.02;
+                    ;
         angle = Range.clip(angle, 0, 0.85);
         return angle;
     }
@@ -236,13 +237,13 @@ public class TeleBlueFRI extends OpMode {
     public static double speedVelocityGain = 3; // tune this
 
     public static void speedCalculator(double x){
-        speed = -0.0925325*x*x+24.25649*x+728.0303-40;
+        speed = -0.0925325*x*x+24.25649*x+728.0303-30;
         LaunchSystem.idleVelocity = speed;
     }
 
     public static void speedCalculator(double x, double robotVelX, double robotVelY, Pose robotPose, Pose goalPose) {
         if (!testing)
-            speed = -0.0925325*x*x+24.25649*x+728.0303-40;
+            speed = -0.0925325*x*x+24.25649*x+728.0303-30;
 
         // Dot product: how much of robot velocity is toward/away from goal
         double dx = goalPose.getX() - robotPose.getX();
