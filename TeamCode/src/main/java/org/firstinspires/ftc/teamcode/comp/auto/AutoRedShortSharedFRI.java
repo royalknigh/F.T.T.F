@@ -33,8 +33,8 @@ public class AutoRedShortSharedFRI extends OpMode {
     private final Pose cyclePose   = new Pose(115, 15, Math.toRadians(270));
 
     private final Pose pickup1Pose    = new Pose(120, 61, Math.toRadians(0));
-    private final Pose pickup2Pose    = new Pose(120, 86, Math.toRadians(0));
-    private final Pose pickup3Pose    = new Pose(120, 109, Math.toRadians(0));
+    private final Pose pickup2Pose    = new Pose(118, 86, Math.toRadians(0));
+    private final Pose pickup3Pose    = new Pose(118, 109, Math.toRadians(0));
 
     private final Pose leave          = new Pose(87, 98, Math.toRadians(265));
     private Configuration configuration;
@@ -47,7 +47,6 @@ public class AutoRedShortSharedFRI extends OpMode {
         pathTimer = new Timer();
         follower   = Constants.createFollower(hardwareMap);
         follower.setStartingPose(startPose);
-
         configuration = new Configuration(hardwareMap);
         launchSystem  = new LaunchSystem(new Configuration(hardwareMap), LaunchSystem.redpurpleGoalPoseAuto);
         buildPaths();
@@ -94,8 +93,7 @@ public class AutoRedShortSharedFRI extends OpMode {
     }
    public void autonomousPathUpdate() {
         switch (pathState) {
-
-            case 0: // preload duh
+            case 0: // preload
                 if (!follower.isBusy()) {
                     follower.followPath(scorePreload);
                     follower.setMaxPower(1);
@@ -112,7 +110,6 @@ public class AutoRedShortSharedFRI extends OpMode {
                     }
                 }
                 break;
-
             case 2: // arunca bile -> primul rand -> score pose
                 if (!follower.isBusy()) {
                     if (launchSystem.update(launchSystem.returnDistance(follower.getPose()), TeleRedFRI.speed)) {

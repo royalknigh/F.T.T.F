@@ -182,7 +182,6 @@ public class LaunchSystem {
             double fieldAngle = Math.toDegrees(Math.atan2(dy, dx));
             double robotHeading = Math.toDegrees(robotPose.getHeading());
 
-
             double rawTarget = betterNormalize(fieldAngle - robotHeading);
 
             if (rawTarget > 190) {
@@ -344,6 +343,9 @@ public class LaunchSystem {
     public static double velocityDifference = 135;//was 60
     public void fullStop() { isLaunching = false; lm1.setVelocity(0); lm2.setVelocity(0); }
     public double getVelocity() { return (lm1.getVelocity() + lm2.getVelocity()) / 2.0; }
+    public double getVelocity1() { return lm1.getVelocity(); }
+    public double getVelocity2() { return lm2.getVelocity(); }
+
     public double returnDistance(Pose robotPose){
         return Math.hypot(goalPose.getX() - robotPose.getX(), goalPose.getY() - robotPose.getY());
     }

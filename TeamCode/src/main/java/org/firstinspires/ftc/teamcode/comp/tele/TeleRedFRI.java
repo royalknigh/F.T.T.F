@@ -236,13 +236,13 @@ public class TeleRedFRI extends OpMode {
     public static double speedVelocityGain = 3; // tune this
 
     public static void speedCalculator(double x){
-        speed = -0.0925325*x*x+24.25649*x+728.0303-30;
+        speed = -0.0925325*x*x+24.25649*x+728.0303-40;
         LaunchSystem.idleVelocity = speed;
     }
 
     public static void speedCalculator(double x, double robotVelX, double robotVelY, Pose robotPose, Pose goalPose) {
         if (!testing)
-            speed = -0.0925325*x*x+24.25649*x+728.0303-30;
+            speed = -0.0925325*x*x+24.25649*x+728.0303-40;
 
         // Dot product: how much of robot velocity is toward/away from goal
         double dx = goalPose.getX() - robotPose.getX();
