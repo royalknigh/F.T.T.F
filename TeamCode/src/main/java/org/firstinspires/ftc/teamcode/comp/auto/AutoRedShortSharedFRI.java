@@ -29,14 +29,15 @@ public class AutoRedShortSharedFRI extends OpMode {
     private boolean row = true;
     private final Pose startPose   = new Pose(83, 32, Math.toRadians(230));
     private final Pose scorePose   = new Pose(97, 63, Math.toRadians(0));
-    private final Pose pickupBottom= new Pose(133, 15, Math.toRadians(270));
-    private final Pose cyclePose   = new Pose(115, 15, Math.toRadians(270));
+    private final Pose pickupBottom2= new Pose(133, 15, Math.toRadians(270));
+    private final Pose pickupBottom= new Pose(133, 18, Math.toRadians(270));
+    private final Pose cyclePose   = new Pose(122, 15, Math.toRadians(270));
 
     private final Pose pickup1Pose    = new Pose(120, 61, Math.toRadians(0));
-    private final Pose pickup2Pose    = new Pose(118, 86, Math.toRadians(0));
-    private final Pose pickup3Pose    = new Pose(118, 109, Math.toRadians(0));
+    private final Pose pickup2Pose    = new Pose(120, 84, Math.toRadians(0));
+    private final Pose pickup3Pose    = new Pose(130, 109, Math.toRadians(0));
 
-    private final Pose leave          = new Pose(87, 98, Math.toRadians(265));
+    private final Pose leave          = new Pose(95, 98, Math.toRadians(275));
     private Configuration configuration;
     private LaunchSystem launchSystem;
 
@@ -204,13 +205,13 @@ public class AutoRedShortSharedFRI extends OpMode {
 
         // Sweeps middle row then curves back to scorePose; launches at arrival
         bottomRow = follower.pathBuilder()
-                .addPath(new BezierCurve(scorePose, new Pose(105,41), new Pose(136,45), pickupBottom))
+                .addPath(new BezierCurve(scorePose, new Pose(107,43), new Pose(136,45), pickupBottom))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), pickupBottom.getHeading())
                 .addParametricCallback(0.4, () -> configuration.intakeMotor.setPower(1))
 
                 .addPath(new BezierLine(pickupBottom, scorePose))
                 .setLinearHeadingInterpolation(pickupBottom.getHeading(), scorePose.getHeading())
-                .addParametricCallback(0.5, () -> configuration.intakeMotor.setPower(0))
+                .addParametricCallback(0.3, () -> configuration.intakeMotor.setPower(0))
                 .addParametricCallback(0.9, () -> launch())
                 .build();
         firstRow = follower.pathBuilder()
@@ -244,13 +245,13 @@ public class AutoRedShortSharedFRI extends OpMode {
                 .addParametricCallback(0.9, () -> launch())
                 .build();
         cycle = follower.pathBuilder()
-                .addPath(new BezierCurve(scorePose, new Pose(110,41), cyclePose))
+                .addPath(new BezierCurve(scorePose, new Pose(115,41), pickupBottom2))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), cyclePose.getHeading())
                 .addParametricCallback(0.4, () -> configuration.intakeMotor.setPower(1))
 
-                .addPath(new BezierLine(cyclePose, scorePose))
+                .addPath(new BezierLine(pickupBottom2, scorePose))
                 .setLinearHeadingInterpolation(cyclePose.getHeading(), scorePose.getHeading())
-                .addParametricCallback(0.4, () -> configuration.intakeMotor.setPower(0))
+                .addParametricCallback(0.2, () -> configuration.intakeMotor.setPower(0))
                 .addParametricCallback(0.9, () -> launch())
                 .build();
         leavePath = follower.pathBuilder()

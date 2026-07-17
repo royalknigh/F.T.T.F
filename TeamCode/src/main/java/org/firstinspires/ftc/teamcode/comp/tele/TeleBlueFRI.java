@@ -243,6 +243,11 @@ public class TeleBlueFRI extends OpMode {
         LaunchSystem.idleVelocity = speed;
     }
 
+    public static void speedCalculatorAutoBlueS(double x){
+        speed = -0.0925325*x*x+24.25649*x+728.0303-20;
+        LaunchSystem.idleVelocity = speed;
+    }
+
     public static void speedCalculator(double x, double robotVelX, double robotVelY, Pose robotPose, Pose goalPose) {
         if (!testing)
             speed = -0.0925325*x*x+24.25649*x+728.0303-40;
@@ -268,5 +273,9 @@ public class TeleBlueFRI extends OpMode {
 
     public Pose getPose(){
         return follower.getPose();
+    }
+
+    public static double getSpeed() {
+        return speed;
     }
 }

@@ -33,9 +33,9 @@ public class AutoBlueFRILong extends OpMode {
     private final Pose pickupPose = new Pose(10, 35, Math.toRadians(180));
     private final Pose bottomPose = new Pose(8, 10, Math.toRadians(180));
     private final Pose gatePickup = new Pose(8, -9, Math.toRadians(180));
-    private final Pose gatePickup2 = new Pose(10, -4, Math.toRadians(180));
-    private final Pose gatePickup3 = new Pose(10, -7, Math.toRadians(180));
-    private final Pose gatePickup4 = new Pose(10, -8, Math.toRadians(180));
+    private final Pose gatePickup2 = new Pose(10, -7, Math.toRadians(180));
+    private final Pose gatePickup3 = new Pose(10, -1, Math.toRadians(180));
+    private final Pose gatePickup4 = new Pose(10, 0, Math.toRadians(180));
     private final Pose park = new Pose(40,30, Math.toRadians(105));
 
 
@@ -267,7 +267,25 @@ public class AutoBlueFRILong extends OpMode {
                 }
                 break;
 
-            case 13: // Wait for second gate-ball launch, then leave
+            case 13: // Wait for gate-ball launch, then return to gate
+                if (!follower.isBusy()) {
+                    if (launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
+                        launchSystem.toggleTracking();
+                        follower.followPath(bottomLineup);
+                        configuration.intakeMotor.setPower(0.8);
+                        setPathState(14);
+                    }
+                }
+                break;
+
+            case 14: // At gate again — score gate ball; callback fires launch()
+                if (!follower.isBusy()) {
+                    follower.followPath(score1);
+                    setPathState(15);
+                }
+                break;
+
+            case 15: // Wait for second gate-ball launch, then leave
                 if (!follower.isBusy()) {
                     if (launchSystem.update(launchSystem.returnDistance(follower.getPose()), Tele.speed)) {
 //                        launchSystem.toggleTracking();

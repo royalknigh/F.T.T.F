@@ -123,7 +123,7 @@ public class AutoRedShortPlayoffSpark extends OpMode {
                 break;
 
             case 3: // Wait for gate to open, then collect
-                if (!follower.isBusy() && gateTimer.seconds() > 1.3) {
+                if (!follower.isBusy() && gateTimer.seconds() > 1.2) {
                     follower.followPath(gateCollect);
                     gateTimer.reset();
                     setPathState(4);
@@ -150,7 +150,7 @@ public class AutoRedShortPlayoffSpark extends OpMode {
                 break;
 
             case 8: // Wait for gate, then collect
-                if (!follower.isBusy() && gateTimer.seconds() > 1.3) {
+                if (!follower.isBusy() && gateTimer.seconds() > 1.2) {
                     follower.followPath(gateCollect);
                     gateTimer.reset();
                     setPathState(9);
@@ -175,7 +175,7 @@ public class AutoRedShortPlayoffSpark extends OpMode {
                 break;
 
             case 11: // Wait for gate, then collect
-                if (!follower.isBusy() && gateTimer.seconds() > 1.3) {
+                if (!follower.isBusy() && gateTimer.seconds() > 1.5) {
                     follower.followPath(gateCollect);
                     gateTimer.reset();
                     setPathState(12);
@@ -183,7 +183,7 @@ public class AutoRedShortPlayoffSpark extends OpMode {
                 break;
 
             case 12: // Wait for collection, then return to score (callback fires launch)
-                if (!follower.isBusy() && gateTimer.seconds() > 1.5) {
+                if (!follower.isBusy() && gateTimer.seconds() > 1.8) {
                     follower.followPath(scoreGate);
                     setPathState(13);
                 }

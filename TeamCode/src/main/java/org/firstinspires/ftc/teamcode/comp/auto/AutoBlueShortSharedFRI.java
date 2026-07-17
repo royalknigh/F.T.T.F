@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.comp.tele.Tele;
 import org.firstinspires.ftc.teamcode.comp.tele.TeleBlueFRI;
+import org.firstinspires.ftc.teamcode.comp.tele.TeleRedFRI;
 import org.firstinspires.ftc.teamcode.configs.Configuration;
 import org.firstinspires.ftc.teamcode.configs.LaunchSystem;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
@@ -25,25 +26,27 @@ public class AutoBlueShortSharedFRI extends OpMode {
     private Timer pathTimer;
     private ElapsedTime gateTimer = new ElapsedTime();
     private int pathState = 0;
+    private boolean row = true;
 
     public static double gateX = 15, gateY = 67, gateHeading = 180;
     public static double pickupX = 11, pickupY = 57, pickupHeading = 130;
 
     private final Pose startPose    = new Pose(61, 32, Math.toRadians(310));
-    private final Pose scorePose    = new Pose(47, 63,    Math.toRadians(180));//-50
-    private final Pose pickupBottom = new Pose(11,15, Math.toRadians(270));
+    private final Pose scorePose    = new Pose(46, 68,    Math.toRadians(180));//-50 //y=70
+    private final Pose pickupBottom = new Pose(11,18, Math.toRadians(270));
+    private final Pose pickupBottom2 = new Pose(11,15, Math.toRadians(270));
     private final Pose cyclePose = new Pose(15,15, Math.toRadians(270));
     //private final Pose fisrtLinePose  = new Pose(42, 84, Math.toRadians(180));
     private final Pose pickup1Pose    = new Pose(27, 61, Math.toRadians(180));
 
 //    private final Pose secondLinePose = new Pose(46, 87, Math.toRadians(180));
-    private final Pose pickup2Pose    = new Pose(27, 86, Math.toRadians(180));
+    private final Pose pickup2Pose    = new Pose(26, 86, Math.toRadians(180));
 //    private final Pose thirdLinePose = new Pose(45, 112, Math.toRadians(180));
-    private final Pose pickup3Pose    = new Pose(26, 109, Math.toRadians(180));
+    private final Pose pickup3Pose    = new Pose(22, 109, Math.toRadians(180));
 //    public static final Pose openGatePose   = new Pose(gateX, gateY, Math.toRadians(gateHeading));
 //
 //    private final Pose pickupGate = new Pose(pickupX, pickupY,  Math.toRadians(pickupHeading));
-    private final Pose leave = new Pose(57, 98,  Math.toRadians(275));
+    private final Pose leave = new Pose(53, 98,  Math.toRadians(265));
 
     private Configuration configuration;
     private LaunchSystem launchSystem;
@@ -82,6 +85,12 @@ public class AutoBlueShortSharedFRI extends OpMode {
         telemetry.addData("Path State", pathState);
         telemetry.addData("Velo", "%.0f / %.0f", launchSystem.getVelocity(), TeleBlueFRI.speed);
         telemetry.addData("Target Pose", "48, 85");
+        telemetry.addData("--- FLYWHEEL ---", "");
+        telemetry.addData("servo: ", TeleBlueFRI.getSpeed());
+        telemetry.addData("Velocity", "%.0f / %.0f", launchSystem.getVelocity(), TeleBlueFRI.getSpeed());
+        telemetry.addData("Velocity1", "%.0f", launchSystem.getVelocity1(), TeleBlueFRI.getSpeed());
+        telemetry.addData("Velocity2", "%.0f", launchSystem.getVelocity2(), TeleBlueFRI.getSpeed());
+        telemetry.addData("Velocity2", "%.0f", TeleBlueFRI.speed);
         telemetry.update();
     }
 
@@ -92,10 +101,19 @@ public class AutoBlueShortSharedFRI extends OpMode {
         launchSystem.fullStop();
     }
 
-   public void autonomousPathUpdate() {
-        switch (pathState) {
+    @Override
+    public void init_loop(){
+        telemetry.addData("3rd Row", row);
+        telemetry.update();
+        if(gamepad1.touchpadWasPressed()){
+            row=!row;
+            gamepad1.rumble(500);
+        }
+    }
 
-            case 0: // preload duh
+    public void autonomousPathUpdate() {
+        switch (pathState) {
+            case 0: // preload
                 if (!follower.isBusy()) {
                     follower.followPath(scorePreload);
                     follower.setMaxPower(1);
@@ -106,17 +124,16 @@ public class AutoBlueShortSharedFRI extends OpMode {
             case 1: // arunca preload -> bile jos -> score pose
                 if (!follower.isBusy()) {
                     if (launchSystem.update(launchSystem.returnDistance(follower.getPose()), TeleBlueFRI.speed)) {
-                        launchSystem.toggleTracking();
+                        launchSystem.toggleTracking(); //on
                         follower.followPath(bottomRow);
                         setPathState(2);
                     }
                 }
                 break;
-
             case 2: // arunca bile -> primul rand -> score pose
                 if (!follower.isBusy()) {
                     if (launchSystem.update(launchSystem.returnDistance(follower.getPose()), TeleBlueFRI.speed)) {
-                        launchSystem.toggleTracking();
+                        launchSystem.toggleTracking(); //off
                         follower.followPath(firstRow);
                         setPathState(3);
                     }
@@ -127,7 +144,10 @@ public class AutoBlueShortSharedFRI extends OpMode {
                     if (launchSystem.update(launchSystem.returnDistance(follower.getPose()), TeleBlueFRI.speed)) {
                         launchSystem.toggleTracking();
                         follower.followPath(secondRow);
-                        setPathState(5);
+                        if(row)
+                            setPathState(4);
+                        else
+                            setPathState(5);
                     }
                 }
                 break;
@@ -150,13 +170,15 @@ public class AutoBlueShortSharedFRI extends OpMode {
                     }
                 }
                 break;
-
             case 6: // Gate drop-off pickup ( cycles + )
                 if (!follower.isBusy()) {
                     if (launchSystem.update(launchSystem.returnDistance(follower.getPose()), TeleBlueFRI.speed)) {
                         launchSystem.toggleTracking();
                         follower.followPath(cycle);
-                        setPathState(7);
+                        if(row)
+                            setPathState(8);
+                        else
+                            setPathState(7);
                     }
                 }
                 break;
@@ -164,21 +186,12 @@ public class AutoBlueShortSharedFRI extends OpMode {
                 if (!follower.isBusy()) {
                     if (launchSystem.update(launchSystem.returnDistance(follower.getPose()), TeleBlueFRI.speed)) {
                         launchSystem.toggleTracking();
-                        follower.followPath(cycle);
-                        setPathState(9);
+                        follower.followPath(bottomRow);
+                        setPathState(8);
                     }
                 }
                 break;
-//            case 8: // Gate drop-off pickup ( cycles + )
-//                if (!follower.isBusy()) {
-//                    if (launchSystem.update(launchSystem.returnDistance(follower.getPose()), TeleBlueFRI.speed)) {
-//                        launchSystem.toggleTracking();
-//                        follower.followPath(bottomRow);
-//                        setPathState(9);
-//                    }
-//                }
-//                break;
-            case 9: // Leave, "Trebuie sa schimbam pozitia" -Iulia
+            case 8: // Leave, "Trebuie sa schimbam pozitia" -Iulia
                 if (!follower.isBusy()) {
                     if (launchSystem.update(launchSystem.returnDistance(follower.getPose()), TeleBlueFRI.speed)) {
 //                        launchSystem.toggleTracking();
@@ -188,7 +201,7 @@ public class AutoBlueShortSharedFRI extends OpMode {
                 }
                 break;
         }
-   }
+    }
 
     public void setPathState(int state) {
         pathState = state;
@@ -211,13 +224,13 @@ public class AutoBlueShortSharedFRI extends OpMode {
 
         // Sweeps middle row then curves back to scorePose; launches at arrival
         bottomRow = follower.pathBuilder()
-                .addPath(new BezierCurve(scorePose, new Pose(39,41), new Pose(8,45), pickupBottom))
+                .addPath(new BezierCurve(scorePose, new Pose(37,43), new Pose(8,45), pickupBottom))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), pickupBottom.getHeading())
                 .addParametricCallback(0.4, () -> configuration.intakeMotor.setPower(1))
 
                 .addPath(new BezierLine(pickupBottom, scorePose))
                 .setLinearHeadingInterpolation(pickupBottom.getHeading(), scorePose.getHeading())
-                .addParametricCallback(0.5, () -> configuration.intakeMotor.setPower(0))
+                .addParametricCallback(0.3, () -> configuration.intakeMotor.setPower(0))
                 .addParametricCallback(0.9, () -> launch())
                 .build();
         firstRow = follower.pathBuilder()
@@ -251,11 +264,11 @@ public class AutoBlueShortSharedFRI extends OpMode {
                 .addParametricCallback(0.9, () -> launch())
                 .build();
         cycle = follower.pathBuilder()
-                .addPath(new BezierCurve(scorePose, new Pose(27,41), cyclePose))
+                .addPath(new BezierCurve(scorePose, new Pose(27,41), pickupBottom2))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), cyclePose.getHeading())
                 .addParametricCallback(0.4, () -> configuration.intakeMotor.setPower(1))
 
-                .addPath(new BezierLine(cyclePose, scorePose))
+                .addPath(new BezierLine(pickupBottom2, scorePose))
                 .setLinearHeadingInterpolation(cyclePose.getHeading(), scorePose.getHeading())
                 .addParametricCallback(0.2, () -> configuration.intakeMotor.setPower(0))
                 .addParametricCallback(0.9, () -> launch())
